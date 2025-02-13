@@ -1,29 +1,30 @@
-const Fastify = require("fastify");
-const sqlite3 = require("sqlite3").verbose();
+const fastify = require('fastify')();
+const path = require('path');
+const fastifyStatic = require('@fastify/static');  // Use the updated @fastify/static plugin
 
-const fastify = Fastify({ logger: true });
-const PORT = 8080;
-
-// Set up SQLite Database
-const db = new sqlite3.Database("./race_results.db", (err) => {
-    if (err) console.error("Database connection failed:", err.message);
-    else console.log("Connected to SQLite database.");
+// Serve static files from the "public" folder
+fastify.register(fastifyStatic, {
+  root: path.join(__dirname, 'public'),
+  prefix: '/', // Serve files at the root of the URL
 });
 
-// Sample route
-fastify.get("/", async (request, reply) => {
-    return { message: "Race Control API is running!" };
+// Example route to test if server is running
+fastify.get('/', async (request, reply) => {
+  return reply.sendFile('index.html'); // This will serve the index.html file
 });
 
-// Start server
+// Start the server
 const start = async () => {
-    try {
-        await fastify.listen({ port: PORT, host: "0.0.0.0" });
-        console.log(`Server is running on http://localhost:${PORT}`);
-    } catch (err) {
-        fastify.log.error(err);
-        process.exit(1);
-    }
+  try {
+    await fastify.listen({
+      port: 8080,
+      host: '0.0.0.0',
+    });
+    console.log("Server running at http://localhost:8080");
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
 };
 
 start();

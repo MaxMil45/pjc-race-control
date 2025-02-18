@@ -7,10 +7,15 @@
 </head>
 <body>
     <h1>Welcome to Race Control</h1>
-    <script>
-        fetch('/api/test')
-            .then(response => response.json())
-            .then(data => console.log(data));
-    </script>
+
+    <h2>Start Timer</h2>
+    <button id="startRace">Start Race</button>
+    <button id="recordFinish" disabled>Record Finish</button>
+    <button id="submitResults" disabled>Submit Results</button>
+    <button id="clearResults" disabled>Clear Results</button>
+
+    <ul id="finishTimes"></ul>
+
+    <script src="function.js" defer></script>
 </body>
 </html>

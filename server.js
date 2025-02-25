@@ -58,12 +58,26 @@ app.post('/api/saveRaceResult', async (req, res) => {
 
 // Define the route to get all race results
 app.get('/api/getRaceResults', async (req, res) => {
+
   try {
     const results = await readResults();
     res.json(results);
   } catch (error) {
     res.status(500).json({ error: "Failed to retrieve race results" });
   }
+  
+});
+
+app.post('/api/clearRaceResults', (req, res) => {
+
+  // Write an empty array to clear the file
+  fs.writeFile(FILE_PATH, '[]', (err) => {
+      if (err) {
+          console.error('Error clearing race results:', err);
+          return res.status(500).json({ error: 'Failed to clear race results' });
+      }
+      res.json({ message: 'Race results cleared successfully' });
+  });
 });
 
 // Start the server

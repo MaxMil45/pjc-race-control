@@ -47,7 +47,7 @@ app.post('/api/saveRaceResult', (req, res) => {
 
 // Get all race results
 app.get('/api/getRaceResults', (req, res) => {
-    const query = 'SELECT * FROM race_results ORDER BY date DESC';
+    const query = 'SELECT * FROM race_results ORDER BY id ASC';
     db.all(query, (err, rows) => {
         if (err) {
             console.error("Error retrieving race results:", err);

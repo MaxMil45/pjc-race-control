@@ -31,16 +31,24 @@ function stopTimer() {
 
 // This function sends the race result to the server
 function sendElapsedTime() {
-    racerName += 1;
+    return new Promise((resolve, reject) => {
+        racerName += 1;
 
-    fetch('http://localhost:8080/api/saveRaceResult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ time: elapsedTime, racer: racerName })
-    })
-    .then(response => response.json())
-    .then(data => console.log("Race result saved:", data))
-    .catch(error => console.error("Error saving result:", error));
+        fetch('http://localhost:8080/api/saveRaceResult', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ time: elapsedTime, racer: racerName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Race result saved:", data);
+            resolve();  // Resolve the promise after data is successfully saved
+        })
+        .catch(error => {
+            console.error("Error saving result:", error);
+            reject(error);  // Reject the promise if there's an error
+        });
+    });
 }
 
 // This function retrieves all race results from the server
@@ -50,6 +58,9 @@ function getRaceResults() {
         .then(results => {
             const finishTimes = document.querySelector("#finishTimes");
             finishTimes.innerHTML = ""; // Clear previous results
+
+            // Sort results by 'id' to ensure they appear in the correct order
+            results.sort((a, b) => a.id - b.id); // Sort by id if that's the correct ordering
 
             const ul = document.createElement("ul");
 
@@ -84,12 +95,13 @@ document.querySelector('#endRace').addEventListener('click', () => {
 
 // Submit Results Button Logic
 document.querySelector('#submitResults').addEventListener('click', () => {
-    sendElapsedTime();
-    getRaceResults();
+    sendElapsedTime()
+        .then(() => getRaceResults())  // Call getRaceResults after sendElapsedTime is done
+        .catch(error => console.error("Error:", error));  // Handle any error that might occur
 });
 
 document.querySelector('#clearResults').addEventListener('click', () => {
-
+    racerName = 0;
     document.querySelector("#clearResults").disabled = true;
 
 

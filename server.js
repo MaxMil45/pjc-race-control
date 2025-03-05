@@ -45,6 +45,29 @@ app.post('/api/saveRaceResult', (req, res) => {
     });
 });
 
+// Update racer name
+app.post('/api/updateRacer', (req, res) => {
+    const { id, racer_name } = req.body;
+
+    if (!id || !racer_name) {
+        return res.status(400).json({ error: "Missing ID or racer name" });
+    }
+
+    const query = 'UPDATE race_results SET racer_name = ? WHERE id = ?';
+    db.run(query, [racer_name, id], function (err) {
+        if (err) {
+            console.error("Error updating racer:", err);
+            return res.status(500).json({ error: "Failed to update racer" });
+        }
+
+        if (this.changes === 0) {
+            return res.status(404).json({ error: "No racer found with that ID" });
+        }
+
+        res.json({ message: "Racer updated successfully", id });
+    });
+});
+
 // Get all race results
 app.get('/api/getRaceResults', (req, res) => {
     const query = 'SELECT * FROM race_results ORDER BY id ASC';

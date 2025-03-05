@@ -6,14 +6,18 @@
     <title>Race Control</title>
 </head>
 <body>
-    <h1>Welcome to Race </h1>
+    <h1>Welcome to Race </h1> 
+
+    <input type="text" id="participant" placeholder="Enter Racer Name">
+    <button id="submitRacer"> Add</button>
 
     <h2>Start Timer</h2>
     <button id="startRace">Start Race</button>
     <button id="endRace" disabled>Stop Race</button>
     <button id="submitResults" disabled>Submit Results</button>
-    <button id="clearResults" disabled>Clear Results</button>
-
+    <button id="clearResults">Clear Results</button>
+    <button id="confirm" hidden>Confirm</button>
+    
     <h1 id="timer"> 00:00:00</h1>
 
     <ul id="finishTimes"></ul>

@@ -1,6 +1,12 @@
 # Race Time - by up2194201
 ## Key features
-Replace this text with an introduction to your key features.
+A race timing app designed for event organizers who need a seamless way to track and record race results. With a simple interface, the app allows users to start a race timer, log finish times for each runner, and submit results effortlessly.
+
+
+
+### Key Feature Name/Description.
+Tell us briefly how to find & use it.
+Describe the thinking behind the design of this feature.  
 The basic features of the app are:
 
 . Start a race timer
@@ -24,12 +30,6 @@ The basic features of the app are:
 . Display race results
 
 . Provide timely results (as data is uploaded or immediately after, so runners can see their official positions and times before they go home).
-
-
-
-### Key Feature Name/Description.
-Tell us briefly how to find & use it.
-Describe the thinking behind the design of this feature.  
 
 
 ### Key Another Feature Name/Description.

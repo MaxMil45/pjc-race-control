@@ -1,27 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Race Control</title>
-</head>
-<body>
-    <h1>Welcome to Race </h1> 
 
-    <input type="text" id="participant" placeholder="Enter Racer Name">
-    <button id="submitRacer"> Add</button>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Race Control</title>
 
-    <h2>Start Timer</h2>
-    <button id="startRace">Start Race</button>
-    <button id="endRace" disabled>Stop Race</button>
-    <button id="submitResults" disabled>Submit Results</button>
-    <button id="clearResults">Clear Results</button>
-    <button id="confirm" hidden>Confirm</button>
+<h1>Welcome to Race </h1> 
+
+<input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required>
+<button id="generateTables">Add Checkpoints</button>
+
+<input type="text" id="participant" placeholder="Enter Racer Name">
+<button id="submitRacer"> Add</button>
+
+<h2>Start Timer</h2>
+<button id="startRace">Start Race</button>
+<button id="endRace" disabled>Stop Race</button>
+<button id="clearResults">Clear Results</button>
+<button id="confirm" hidden>Confirm</button>
+<button id="sendData" >Send Data</button>
+<button id="exportResults" hidden>Export to CSV</button>
     
-    <h1 id="timer"> 00:00:00</h1>
+<h1 id="timer"> 00:00:00</h1>
 
-    <ul id="finishTimes"></ul>
+<div id="checkpointsContainer"></div>
 
-    <script src="function.js"></script>
-</body>
+<h2>The Finish Times:</h2> 
+<button id="submitResults" disabled>Submit Results</button>
+<ul id="finishTimes"></ul>
+
+
+<template id="checkpointTemplate">
+    <section class="checkpoint" aria-labelledby="checkpoint-heading">
+      <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
+      <button class="checkpoint-button" data-checkpoint="">Record Time</button>
+  
+      <h4>Recorded Times:</h4>
+      <ul class="times-list" aria-label="Checkpoint times list">
+        <!-- Times will be listed here -->
+      </ul>
+    </section>
+</template>
+
+
+<script src="function.js"></script>
 </html>

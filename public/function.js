@@ -6,197 +6,247 @@ let racerName = 0;
 let count = 0;
 let isPaused = false;
 let pausedTime = 0;
+let numCheckpoint = 0;
+let numFinish = 0;
+let checkpointData = {};
 
-// Starts or resumes the timer
+// Save local results array in localStorage if not already
+if (!localStorage.getItem('raceResults')) {
+  localStorage.setItem('raceResults', JSON.stringify([]));
+}
+
+function getLocalResults() {
+  return JSON.parse(localStorage.getItem('raceResults')) || [];
+}
+
+function setLocalResults(results) {
+  localStorage.setItem('raceResults', JSON.stringify(results));
+}
+
+// Start or resume timer
 function startTimer() {
-    if (isPaused) {
-        // Resume from the paused time
-        startTime = Date.now() - pausedTime;
-    } else {
-        // Start fresh
-        startTime = Date.now();
-    }
+  if (isPaused) {
+    startTime = Date.now() - pausedTime;
+  } else {
+    startTime = Date.now();
+  }
 
-    isPaused = false;
+  isPaused = false;
 
-    timerInterval = setInterval(() => {
-        const currentTime = Date.now();
-        const timeDiff = currentTime - startTime;
-        pausedTime = timeDiff; // Store elapsed time for resuming
+  timerInterval = setInterval(() => {
+    const currentTime = Date.now();
+    const timeDiff = currentTime - startTime;
+    pausedTime = timeDiff;
 
-        // Calculate minutes, seconds, and milliseconds
-        let milliseconds = timeDiff % 1000;
-        let seconds = Math.floor(timeDiff / 1000) % 60;
-        let minutes = Math.floor(timeDiff / 60000);
+    const milliseconds = timeDiff % 1000;
+    const seconds = Math.floor(timeDiff / 1000) % 60;
+    const minutes = Math.floor(timeDiff / 60000);
 
-        // Format time as mm:ss:ms
-        let formattedMilliseconds = (milliseconds / 10).toFixed(0).padStart(2, '0');
-        elapsedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${formattedMilliseconds}`;
+    const formattedMilliseconds = (milliseconds / 10).toFixed(0).padStart(2, '0');
+    elapsedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${formattedMilliseconds}`;
 
-        document.querySelector("#timer").innerHTML = elapsedTime;
-    }, 10);
+    document.querySelector('#timer').innerHTML = elapsedTime;
+  }, 10);
 }
 
-// Pauses the timer
 function pauseTimer() {
-    if (!isPaused) {
-        clearInterval(timerInterval);
-        isPaused = true;
-    }
-}
-
-// Stops the timer completely
-function stopTimer() {
+  if (!isPaused) {
     clearInterval(timerInterval);
-    isPaused = false;
-    pausedTime = 0; // Reset the paused time
+    isPaused = true;
+  }
 }
 
-// This function sends the race result to the server
-function sendElapsedTime() {
-    return new Promise((resolve, reject) => {
-        racerName += 1;
-
-        fetch('http://localhost:8080/api/saveRaceResult', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ time: elapsedTime, racer: racerName })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log("Race result saved:", data);
-            resolve();  // Resolve the promise after data is successfully saved
-        })
-        .catch(error => {
-            console.error("Error saving result:", error);
-            reject(error);  // Reject the promise if there's an error
-        });
-    });
+function stopTimer() {
+  clearInterval(timerInterval);
+  isPaused = false;
+  pausedTime = 0;
 }
 
-function updateRacer(id, racer_name) {
-    fetch('/api/updateRacer', {
+// Save result locally instead of sending to server
+function saveResultLocally() {
+  racerName += 1;
+  const results = getLocalResults();
+  results.push({ id: racerName, racer_name: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish });
+  setLocalResults(results);
+  renderRaceResults();
+}
+
+// Submit local results to server
+async function submitToServer() {
+  const results = getLocalResults(); // Get all local results
+
+  if (!results || results.length === 0) {
+    alert('No results to submit!');
+    return;
+  }
+
+  try {
+    for (const result of results) {
+      const response = await fetch('http://localhost:8080/api/saveRaceResult', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ id, racer_name })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => console.log(data))
-    .catch(error => console.error("Error updating racer:", error));
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          racer: result.racer_name,
+          time: result.time,
+          checkpoint: result.checkpoint,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to submit result:', await response.text());
+      }
+    }
+
+    alert('All results submitted to the server!');
+    localStorage.removeItem('raceResults'); // Clear after successful submission
+    renderRaceResults(); // Refresh UI
+  } catch (err) {
+    console.error('Error submitting to server:', err);
+    alert('Error submitting results to server.');
+  }
 }
 
-// This function retrieves all race results from the server
-function getRaceResults() {
-    fetch('http://localhost:8080/api/getRaceResults')
-        .then(response => response.json())
-        .then(results => {
-            const finishTimes = document.querySelector("#finishTimes");
-            finishTimes.innerHTML = ""; // Clear previous results
-
-            // Sort results by 'id' to ensure they appear in the correct order
-            results.sort((a, b) => a.id - b.id); // Sort by id if that's the correct ordering
-
-            const ul = document.createElement("ul");
-
-            results.forEach(result => {
-                // Create a list item (li) for each result
-                const li = document.createElement("li");
-                li.textContent = `${result.racer_name}: ${result.time}`;
-
-                ul.appendChild(li);
-            });
-
-            finishTimes.appendChild(ul);
-        })
-        .catch(error => console.error("Error retrieving results:", error));
+async function updateRacer(id, racer_name) {
+  const results = getLocalResults();
+  const updated = results.map((res) => (res.id === id ? { ...res, racer_name } : res));
+  setLocalResults(updated);
+  renderRaceResults();
 }
 
-// This function clears database data
-function clearData() {
-    stopTimer();
-    fetch('http://localhost:8080/api/clearRaceResults', {
-        method: 'POST'
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.message);
-        
-        // This resests the finishTimes list
-        document.querySelector("#finishTimes").innerHTML = "";
-    })
-    .catch(error => {
-        console.error("Error clearing results:", error);
+function renderRaceResults() {
+  const results = getLocalResults();
+  const finishTimes = document.querySelector('#finishTimes');
+  finishTimes.innerHTML = '';
+
+  const ul = document.createElement('ul');
+  results.forEach(result => {
+    const li = document.createElement('li');
+    li.textContent = `${result.racer_name}: ${result.time}`;
+    ul.appendChild(li);
+  });
+
+  finishTimes.appendChild(ul);
+}
+
+function saveLocalResult(racer_name, time) {
+  const results = getLocalResults();
+  results.push({ racer_name, time });
+  localStorage.setItem('raceResults', JSON.stringify(results));
+}
+
+function clearLocalData() {
+  localStorage.removeItem('raceResults');
+  racerName = 0;
+  renderRaceResults();
+  stopTimer();
+}
+
+async function clearData() {
+  try {
+    const res = await fetch('http://localhost:8080/api/clearRaceResults', {
+      method: 'DELETE',
     });
+
+    if (!res.ok) throw new Error(`Failed to clear: ${res.status}`);
+
+    console.log((await res.json()).message);
+    alert('Race results cleared from the database!');
+  } catch (err) {
+    console.error('Error clearing results:', err);
+    alert('Failed to clear race results.');
+  }
 }
 
-// Start/Stop Timer Button Logic
+// Event Listeners
 document.querySelector('#startRace').addEventListener('click', () => {
-    startTimer();
-    document.querySelector("#startRace").disabled = true;
-    document.querySelector("#endRace").disabled = false;
-    document.querySelector("#submitResults").disabled = false;
-
+  startTimer();
+  document.querySelector('#startRace').disabled = true;
+  document.querySelector('#endRace').disabled = false;
+  document.querySelector('#submitResults').disabled = false;
 });
 
 document.querySelector('#endRace').addEventListener('click', () => {
-    pauseTimer();
-    document.querySelector("#startRace").disabled = false;
-    document.querySelector("#endRace").disabled = true;
-    document.querySelector("#submitResults").disabled = true;
-    document.querySelector("#clearResults").disabled = false;
-    document.querySelector("#startRace").textContent = "Resume";
+  pauseTimer();
+  document.querySelector('#startRace').disabled = false;
+  document.querySelector('#endRace').disabled = true;
+  document.querySelector('#submitResults').disabled = true;
+  document.querySelector('#clearResults').disabled = false;
+  document.querySelector('#startRace').textContent = 'Resume';
+  document.querySelector('#exportResults').hidden = false;
 });
 
-// Clear Results Button Logic
 document.querySelector('#clearResults').addEventListener('click', () => {
-    let x;
-    if (confirm("Are you sure?") == true) {
-        x = "You pressed OK!";
-        racerName = 0;
-        document.querySelector("#clearResults").disabled = true;
-
-        clearData();
-        document.querySelector("#startRace").textContent = "Start Race";
-    } else {
-        x = "You pressed Cancel!";
-    }
+  if (confirm('Are you sure?')) {
+    clearLocalData();
+    clearData();
+    document.querySelector('#clearResults').disabled = true;
+    document.querySelector('#startRace').textContent = 'Start Race';
+  }
 });
 
-// Submit Results Button Logic
 document.querySelector('#submitResults').addEventListener('click', () => {
-    sendElapsedTime()
-        .then(() => getRaceResults())  // Call getRaceResults after sendElapsedTime is done
-        .catch(error => console.error("Error:", error));  // Handle any error that might occur
+  saveResultLocally();
 });
 
-document.querySelector("#submitRacer").addEventListener('click', () => {
-    const racerInput = document.querySelector("#participant");
+document.querySelector('#submitRacer').addEventListener('click', async () => {
+  const racerInput = document.querySelector('#participant');
+  count += 1;
+  const id = count;
+  const racer_name = racerInput.value.trim();
 
-    if (!racerInput) {
-        console.error("Error: #participant input not found!");
-        return;
-    }
+  if (racer_name !== '') {
+    await updateRacer(id, racer_name);
+    racerInput.value = '';
+  }
 
-    count += 1;
-    const id = count;
-    const racer_name = racerInput.value.trim(); // Trim to remove extra spaces
+  renderRaceResults();
+});
 
-    // Prevents sending empty names
-    if (racer_name === "") {
-        console.warn("Error: Input is empty!");
-        return;
-    }
+document.querySelector('#exportResults').addEventListener('click', () => {
+  window.location.href = 'http://localhost:8080/api/exportRaceResults';
+});
 
-    // Call updateRacer to update the racer name 
-    updateRacer(id, racer_name);
-    // Call getRaceResults after updateRacer is done
-    getRaceResults();
-    racerInput.value = "";
+document.querySelector('#sendData').addEventListener('click', async () => {
+  await submitToServer();
+});
+
+document.querySelector('#generateTables').addEventListener('click', () => {
+  // Get the number of checkpoints
+  numCheckpoint = parseInt(document.querySelector('#checkpointLocation').value);
+  numFinish = numCheckpoint + 1;
+  const container = document.querySelector('#checkpointsContainer');
+  const template = document.querySelector('#checkpointTemplate');
+
+  // Clear any previous checkpoints
+  container.innerHTML = '';
+
+  // Validate the number of checkpoints
+  if (isNaN(numCheckpoint) || numCheckpoint <= 0) {
+    alert('Please enter a valid number of checkpoints.');
+    return;
+  }
+
+  for (let i = 1; i <= numCheckpoint; i++) {
+    const clone = template.content.cloneNode(true);
+
+    // Set the checkpoint number and button data
+    clone.querySelector('.checkpoint-number').textContent = i;
+    clone.querySelector('.checkpoint-button').dataset.checkpoint = i;
+    clone.querySelector('.times-list').id = `timesList-${i}`;
+
+    container.appendChild(clone);
+
+    checkpointData[i] = [];
+  }
+});
+
+// Use event delegation to handle clicks on dynamically created checkpoint buttons
+document.querySelector('#checkpointsContainer').addEventListener('click', function (event) {
+  if (event.target.classList.contains('checkpoint-button')) {
+    const checkpoint = parseInt(event.target.dataset.checkpoint);
+
+    checkpointData[checkpoint].push(elapsedTime);
+
+    console.log(`Checkpoint ${checkpoint} times:`, checkpointData[checkpoint]);
+  }
 });

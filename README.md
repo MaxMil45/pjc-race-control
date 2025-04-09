@@ -1,11 +1,35 @@
-# Race Time - by upXXXXXXX
+# Race Time - by up2194201
 ## Key features
-Replace this text with an introduction to your key features.
+A race timing app designed for event organizers who need a seamless way to track and record race results. With a simple interface, the app allows users to start a race timer, log finish times for each runner, and submit results effortlessly.
+
 
 
 ### Key Feature Name/Description.
 Tell us briefly how to find & use it.
 Describe the thinking behind the design of this feature.  
+The basic features of the app are:
+
+. Start a race timer
+
+. Record the finish time of each runner in that race
+
+. Submit results to a server
+
+. Clear race results from their device after the race
+
+. Record race results on a phone that is in "airplane mode" - i.e. offline
+
+. Store data from one race at a time.
+
+. Provide timing for races up to 24 hours in length
+
+. Upload race results to a server (either live during the race and/or as a batch upload afterwards if data is recorded in "airplane mode")
+
+. Receive data from users
+
+. Display race results
+
+. Provide timely results (as data is uploaded or immediately after, so runners can see their official positions and times before they go home).
 
 
 ### Key Another Feature Name/Description.

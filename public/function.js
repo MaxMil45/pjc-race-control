@@ -119,24 +119,40 @@ function renderRaceResults() {
   finishTimes.innerHTML = '';
 
   const ul = document.createElement('ul');
-  results.forEach(result => {
-    const li = document.createElement('li');
-    li.textContent = `${result.racer_name}: ${result.time}`;
-    ul.appendChild(li);
-  });
+
+  results
+    .filter(result => result.checkpoint === numFinish)
+    .forEach(result => {
+      const li = document.createElement('li');
+      li.textContent = `Racer ${result.id}: ${result.time}`;
+      ul.appendChild(li);
+    });
 
   finishTimes.appendChild(ul);
 }
 
-function saveLocalResult(racer_name, time) {
+function addResult(time, checkpoint) {
   const results = getLocalResults();
-  results.push({ racer_name, time });
-  localStorage.setItem('raceResults', JSON.stringify(results));
+  const checkpointResults = results.filter(r => r.checkpoint === checkpoint);
+  const id = checkpointResults.length + 1;
+  const racer_name = `Racer ${id}`;
+
+  results.push({ id, racer_name, time, checkpoint });
+  setLocalResults(results);
 }
 
 function clearLocalData() {
   localStorage.removeItem('raceResults');
   racerName = 0;
+
+  Object.keys(checkpointData).forEach(key => {
+    checkpointData[key] = [];
+  });
+
+  document.querySelectorAll('.times-list').forEach(list => {
+    list.innerHTML = '';
+  });
+
   renderRaceResults();
   stopTimer();
 }
@@ -248,5 +264,14 @@ document.querySelector('#checkpointsContainer').addEventListener('click', functi
     checkpointData[checkpoint].push(elapsedTime);
 
     console.log(`Checkpoint ${checkpoint} times:`, checkpointData[checkpoint]);
+
+    const checkpointSection = event.target.closest('.checkpoint');
+    const timesList = checkpointSection.querySelector('.times-list');
+
+    const li = document.createElement('li');
+    li.textContent = elapsedTime;
+    timesList.appendChild(li);
+
+    addResult(elapsedTime, checkpoint);
   }
 });

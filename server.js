@@ -21,7 +21,7 @@ app.post('/api/saveRaceResult', async (req, res) => {
 
   try {
     const result = await db.run(
-      'INSERT INTO race_results (racer_name, time, checkpoint) VALUES (?, ?, ?)',
+      'INSERT INTO race_results (runnerName, time, checkpoint) VALUES (?, ?, ?)',
       [racer, time, checkpoint],
     );
     res.json({ message: 'Race result saved successfully', id: result.lastID });
@@ -33,13 +33,13 @@ app.post('/api/saveRaceResult', async (req, res) => {
 
 // Update racer name
 app.post('/api/updateRacer', async (req, res) => {
-  const { id, racer_name } = req.body;
-  if (!id || !racer_name) {
+  const { id, runnerName } = req.body;
+  if (!id || !runnerName) {
     return res.status(400).json({ error: 'Missing ID or racer name' });
   }
 
   try {
-    const result = await db.run('UPDATE race_results SET racer_name = ? WHERE id = ?', [racer_name, id]);
+    const result = await db.run('UPDATE race_results SET runnerName = ? WHERE id = ?', [runnerName, id]);
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'No racer found with that ID' });
@@ -84,10 +84,10 @@ app.get('/api/exportRaceResults', async (req, res) => {
       return res.status(404).json({ error: 'No race results found' });
     }
 
-    let csv = 'id,racer_name,time,date\n';
+    let csv = 'id,runnerName,time,date\n';
     results.forEach(row => {
-      const { id, racer_name, time, date } = row;
-      csv += `${id},"${racer_name}","${time}","${date}"\n`;
+      const { id, runnerName, time, date } = row;
+      csv += `${id},"${runnerName}","${time}","${date}"\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv');

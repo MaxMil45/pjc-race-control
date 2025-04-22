@@ -29,17 +29,25 @@
 <button id="submitResults" disabled>Submit Results</button>
 <ul id="finishTimes"></ul>
 
+<dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+  <h2 id="confirmTitle">Confirm Action</h2>
+  <p id="confirmText">Are you sure you want to clear all race results?</p>
+  <form method="dialog">
+    <button id="confirmYes">Yes</button>
+    <button id="confirmNo">Cancel</button>
+  </form>
+</dialog>
 
 <template id="checkpointTemplate">
-    <section class="checkpoint" aria-labelledby="checkpoint-heading">
-      <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
-      <button class="checkpoint-button" data-checkpoint="">Record Time</button>
+  <section class="checkpoint" aria-labelledby="checkpoint-heading">
+    <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
+    <button class="checkpoint-button" data-checkpoint="">Record Time</button>
   
-      <h4>Recorded Times:</h4>
-      <ul class="times-list" aria-label="Checkpoint times list">
-        <!-- Times will be listed here -->
-      </ul>
-    </section>
+    <h4>Recorded Times:</h4>
+    <ul class="times-list" aria-label="Checkpoint times list">
+      <!-- Times will be listed here -->
+    </ul>
+  </section>
 </template>
 
 

@@ -1,4 +1,5 @@
-// Timer Variables
+// Global Timer Variables
+// ----------------------------------------------------------------------
 let startTime = 0;
 let elapsedTime = null;
 let timerInterval = null;
@@ -8,7 +9,19 @@ let isPaused = false;
 let pausedTime = 0;
 let numCheckpoint = 0;
 let numFinish = 0;
-let checkpointData = {};
+const checkpointData = {};
+
+// =======================
+// Confirmation Dialog
+// =======================
+const confirmDialog = document.querySelector('#confirmDialog');
+const confirmYes = document.querySelector('#confirmYes');
+const confirmNo = document.querySelector('#confirmNo');
+let onConfirm = null;
+
+// =======================
+// Local Storage Functions
+// =======================
 
 // Save local results array in localStorage if not already
 if (!localStorage.getItem('raceResults')) {
@@ -22,6 +35,10 @@ function getLocalResults() {
 function setLocalResults(results) {
   localStorage.setItem('raceResults', JSON.stringify(results));
 }
+
+// =======================
+// Timer Controls
+// =======================
 
 // Start or resume timer
 function startTimer() {
@@ -62,11 +79,15 @@ function stopTimer() {
   pausedTime = 0;
 }
 
+// =======================
+// Race Result Functions
+// =======================
+
 // Save result locally instead of sending to server
 function saveResultLocally() {
   racerName += 1;
   const results = getLocalResults();
-  results.push({ id: racerName, racer_name: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish });
+  results.push({ id: racerName, runnerName: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish });
   setLocalResults(results);
   renderRaceResults();
 }
@@ -86,7 +107,7 @@ async function submitToServer() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          racer: result.racer_name,
+          racer: result.runnerName,
           time: result.time,
           checkpoint: result.checkpoint,
         }),
@@ -106,9 +127,21 @@ async function submitToServer() {
   }
 }
 
-async function updateRacer(id, racer_name) {
+function updateRacer(id, runnerName, checkpoint) {
+  console.log(`Updating racer with ID ${id} to name "${runnerName}"`);
+
   const results = getLocalResults();
-  const updated = results.map((res) => (res.id === id ? { ...res, racer_name } : res));
+  console.log('Current results:', results);
+
+  const updated = results.map((res) =>
+    res.id === id && res.checkpoint === checkpoint ? { ...res, runnerName } : res,
+  );
+
+  const foundMatch = results.some(res => res.id === id);
+  if (!foundMatch) {
+    console.warn(`No result with ID ${id} was found to update.`);
+  }
+
   setLocalResults(updated);
   renderRaceResults();
 }
@@ -124,7 +157,7 @@ function renderRaceResults() {
     .filter(result => result.checkpoint === numFinish)
     .forEach(result => {
       const li = document.createElement('li');
-      li.textContent = `Racer ${result.id}: ${result.time}`;
+      li.textContent = `${result.runnerName}: ${result.time}`;
       ul.appendChild(li);
     });
 
@@ -135,10 +168,22 @@ function addResult(time, checkpoint) {
   const results = getLocalResults();
   const checkpointResults = results.filter(r => r.checkpoint === checkpoint);
   const id = checkpointResults.length + 1;
-  const racer_name = `Racer ${id}`;
+  const runnerName = `Racer ${id}`;
 
-  results.push({ id, racer_name, time, checkpoint });
+  results.push({ id, runnerName, time, checkpoint });
   setLocalResults(results);
+}
+
+// Function to open the custom dialog with a callback to execute on confirmation
+function openConfirmDialog(callback) {
+  onConfirm = callback;
+  confirmDialog.showModal();
+  confirmYes.focus();
+}
+
+// Function to close the dialog
+function closeConfirmDialog() {
+  confirmDialog.close();
 }
 
 function clearLocalData() {
@@ -166,14 +211,16 @@ async function clearData() {
     if (!res.ok) throw new Error(`Failed to clear: ${res.status}`);
 
     console.log((await res.json()).message);
-    alert('Race results cleared from the database!');
   } catch (err) {
     console.error('Error clearing results:', err);
     alert('Failed to clear race results.');
   }
 }
 
+// =======================
 // Event Listeners
+// =======================
+
 document.querySelector('#startRace').addEventListener('click', () => {
   startTimer();
   document.querySelector('#startRace').disabled = true;
@@ -192,12 +239,12 @@ document.querySelector('#endRace').addEventListener('click', () => {
 });
 
 document.querySelector('#clearResults').addEventListener('click', () => {
-  if (confirm('Are you sure?')) {
+  openConfirmDialog(() => {
     clearLocalData();
     clearData();
     document.querySelector('#clearResults').disabled = true;
     document.querySelector('#startRace').textContent = 'Start Race';
-  }
+  });
 });
 
 document.querySelector('#submitResults').addEventListener('click', () => {
@@ -208,10 +255,11 @@ document.querySelector('#submitRacer').addEventListener('click', async () => {
   const racerInput = document.querySelector('#participant');
   count += 1;
   const id = count;
-  const racer_name = racerInput.value.trim();
+  const runnerName = racerInput.value.trim();
+  const checkpoint = numFinish;
 
-  if (racer_name !== '') {
-    await updateRacer(id, racer_name);
+  if (runnerName !== '') {
+    await updateRacer(id, runnerName, checkpoint);
     racerInput.value = '';
   }
 
@@ -225,6 +273,14 @@ document.querySelector('#exportResults').addEventListener('click', () => {
 document.querySelector('#sendData').addEventListener('click', async () => {
   await submitToServer();
 });
+
+confirmYes.addEventListener('click', () => {
+  if (typeof onConfirm === 'function') onConfirm();
+  closeConfirmDialog();
+});
+
+// Event listener for 'No' button in the confirmation dialog
+confirmNo.addEventListener('click', closeConfirmDialog);
 
 document.querySelector('#generateTables').addEventListener('click', () => {
   // Get the number of checkpoints

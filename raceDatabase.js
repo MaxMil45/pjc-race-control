@@ -6,25 +6,25 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function init() {
-  try {
-    const dbPath = path.resolve(__dirname, './database.sqlite');  // Path to SQLite file
-    const migrationsPath = path.resolve(__dirname, './migrations-sqlite');  // Migrations folder
+  const dbPath = path.resolve(__dirname, './database.sqlite');
+  const migrationsPath = path.resolve(__dirname, './migrations-sqlite');
 
-    // Open SQLite database
-    const db = await open({
-      filename: dbPath,
-      driver: sqlite3.Database
-    });
+  const db = await open({
+    filename: dbPath,
+    driver: sqlite3.Database
+  });
 
-    // Apply migrations
-    await db.migrate({ migrationsPath });
-
-    console.log("Database initialized and migrations applied.");
-    return db;
-  } catch (error) {
-    console.error("Error initializing database:", error);
-    throw error;
+  if (!db) {
+    return;
   }
+
+  const migrationResult = await db.migrate({ migrationsPath });
+
+  if (!migrationResult) {
+    return;
+  }
+
+  return db;
 }
 
 export const db = await init();

@@ -1,0 +1,174 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3 {
+    color: #333;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+  }
+  
+  h2 {
+    font-size: 1.8em;
+  }
+  
+  h3 {
+    font-size: 1.5em;
+  }
+  
+  button {
+    padding: 10px 20px;
+    font-size: 1em;
+    margin: 10px;
+    cursor: pointer;
+    border: none;
+    border-radius: 5px;
+    background-color: #4CAF50;
+    color: white;
+    transition: background-color 0.3s;
+  }
+  
+  button:hover {
+    background-color: #45a049;
+  }
+  
+  input[type="text"], input[type="number"] {
+    padding: 10px;
+    font-size: 1em;
+    margin: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    width: 200px;
+  }
+  
+  input[type="text"]:focus, input[type="number"]:focus {
+    border-color: #4CAF50;
+  }
+  
+  h1#timer {
+    font-size: 2.5em;
+    text-align: center;
+    color: #333;
+    font-weight: bold;
+    margin-top: 20px;
+  }
+  
+  #checkpointsContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+  }
+  
+  #finishTimes {
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+  }
+  
+  #finishTimes li {
+    font-size: 1.2em;
+    margin: 5px 0;
+  }
+  
+  #submitResults {
+    display: block;
+    width: 200px;
+    margin: 20px auto;
+  }
+  
+  #confirmDialog {
+    width: 300px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  #confirmDialog form {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  #confirmDialog button {
+    background-color: #f44336;
+    color: white;
+    border-radius: 5px;
+    padding: 10px 20px;
+  }
+  
+  #confirmDialog button#confirmNo {
+    background-color: #ccc;
+  }
+  
+  .checkpoint {
+    background-color: #ffffff;
+    padding: 20px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .checkpoint h3 {
+    font-size: 1.5em;
+  }
+  
+  .checkpoint-button {
+    background-color: #008CBA;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .checkpoint-button:hover {
+    background-color: #007bb5;
+  }
+  
+  .times-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .times-list li {
+    font-size: 1.1em;
+    margin-bottom: 5px;
+  }
+  
+  #generateTables, #submitRacer {
+    width: 220px;
+    margin-top: 20px;
+  }
+  
+  /* Centering all buttons */
+  button, #generateTables, #submitRacer, #submitResults, #sendData, #exportResults, #startRace, #endRace, #clearResults {
+    display: inline-block;
+    margin: 10px;
+    text-align: center;
+    width: 220px;
+  }
+  
+  #exportResults {
+    margin-top: 20px;
+  }
+  

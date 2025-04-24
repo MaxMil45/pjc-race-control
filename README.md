@@ -46,6 +46,8 @@ Same for each feature… you get the idea :-)
 ## AI
 Replace this with DETAIL about your use of AI, listing of the prompts you used, and whether the results formed or inspired part of your final submission and where we can see this (and if not, why not?). You may wish to group prompts into headings/sections - use markdown in any way that it helps you communicate your use of AI.  Tell us about what went right,  what went horribly wrong and what you learned from it.
 
+What went wrong in the beggining was that varibales names were every similar to the point i was mistaking name for another varaible. This was further made worse with me using camal case most of the time however sometimes using snake case. This made some things go wrong where I would have raceName and racer_Name, this made my code look uneaderable to a nomal person looking at my code. I therefor changed all occurances with the help of eslint.  
+
 ### Prompts to develop XYZ (example)
 A sequence of prompts helped me develop this feature:
 

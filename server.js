@@ -19,16 +19,17 @@ app.post('/api/saveRaceResult', async (req, res) => {
     return res.status(400).json({ error: 'Missing time, racer, or checkpoint' });
   }
 
-  try {
-    const result = await db.run(
-      'INSERT INTO race_results (runnerName, time, checkpoint) VALUES (?, ?, ?)',
-      [racer, time, checkpoint],
-    );
-    res.json({ message: 'Race result saved successfully', id: result.lastID });
-  } catch (err) {
-    console.error('Error saving race result:', err);
-    res.status(500).json({ error: 'Failed to save race result' });
+  const result = await db.run(
+    'INSERT INTO race_results (runnerName, time, checkpoint) VALUES (?, ?, ?)',
+    [racer, time, checkpoint],
+  );
+
+  if (!result) {
+    console.error('Error saving race result: Failed to insert');
+    return res.status(500).json({ error: 'Failed to save race result' });
   }
+
+  res.json({ message: 'Race result saved successfully', id: result.lastID });
 });
 
 // Update racer name
@@ -38,66 +39,59 @@ app.post('/api/updateRacer', async (req, res) => {
     return res.status(400).json({ error: 'Missing ID or racer name' });
   }
 
-  try {
-    const result = await db.run('UPDATE race_results SET runnerName = ? WHERE id = ?', [runnerName, id]);
+  const result = await db.run('UPDATE race_results SET runnerName = ? WHERE id = ?', [runnerName, id]);
 
-    if (result.changes === 0) {
-      return res.status(404).json({ error: 'No racer found with that ID' });
-    }
-
-    res.json({ message: 'Racer updated successfully', id });
-  } catch (err) {
-    console.error('Error updating racer:', err);
-    res.status(500).json({ error: 'Failed to update racer' });
+  if (result.changes === 0) {
+    return res.status(404).json({ error: 'No racer found with that ID' });
   }
+
+  res.json({ message: 'Racer updated successfully', id });
 });
 
 // Get all race results
 app.get('/api/getRaceResults', async (req, res) => {
-  try {
-    const results = await db.all('SELECT * FROM race_results ORDER BY id ASC');
-    res.json(results);
-  } catch (err) {
-    console.error('Error retrieving race results:', err);
-    res.status(500).json({ error: 'Failed to retrieve race results' });
+  const results = await db.all('SELECT * FROM race_results ORDER BY id ASC');
+
+  if (!results) {
+    console.error('Error retrieving race results: Failed to fetch results');
+    return res.status(500).json({ error: 'Failed to retrieve race results' });
   }
+
+  res.json(results);
 });
 
 // Clear all race results
 app.delete('/api/clearRaceResults', async (req, res) => {
-  try {
-    await db.run('DELETE FROM race_results');
-    await db.run("DELETE FROM sqlite_sequence WHERE name = 'race_results'");
-    res.json({ message: 'Race results cleared successfully and ID reset to 1' });
-  } catch (err) {
-    console.error('Error clearing race results:', err);
-    res.status(500).json({ error: 'Failed to clear race results' });
+  const deleteResults = await db.run('DELETE FROM race_results');
+  const resetSequence = await db.run("DELETE FROM sqlite_sequence WHERE name = 'race_results'");
+
+  if (!deleteResults || !resetSequence) {
+    console.error('Error clearing race results: Failed to delete from database');
+    return res.status(500).json({ error: 'Failed to clear race results' });
   }
+
+  res.json({ message: 'Race results cleared successfully and ID reset to 1' });
 });
 
 // Export results as CSV
 app.get('/api/exportRaceResults', async (req, res) => {
-  try {
-    const results = await db.all('SELECT * FROM race_results');
+  const results = await db.all('SELECT * FROM race_results');
 
-    if (results.length === 0) {
-      return res.status(404).json({ error: 'No race results found' });
-    }
-
-    let csv = 'id,runnerName,time,date\n';
-    results.forEach(row => {
-      const { id, runnerName, time, date } = row;
-      csv += `${id},"${runnerName}","${time}","${date}"\n`;
-    });
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename="race_results.csv"');
-
-    res.send(csv);
-  } catch (error) {
-    console.error('Error exporting to CSV:', error);
-    res.status(500).json({ error: 'Failed to export results to CSV' });
+  if (!results || results.length === 0) {
+    return res.status(404).json({ error: 'No race results found' });
   }
+
+  let csv = 'id,runnerName,checkpoint,time,date\n';
+  results.forEach(row => {
+    const { id, runnerName, checkpoint, time, date } = row;
+    csv += `${id},"${runnerName}","${checkpoint}","${time}","${date}"\n`;
+  });
+
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="race_results.csv"');
+
+  res.send(csv);
 });
+
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

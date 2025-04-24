@@ -94,37 +94,33 @@ function saveResultLocally() {
 
 // Submit local results to server
 async function submitToServer() {
-  const results = getLocalResults(); // Get all local results
+  const results = getLocalResults();
 
   if (!results || results.length === 0) {
     alert('No results to submit!');
     return;
   }
 
-  try {
-    for (const result of results) {
-      const response = await fetch('http://localhost:8080/api/saveRaceResult', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          racer: result.runnerName,
-          time: result.time,
-          checkpoint: result.checkpoint,
-        }),
-      });
+  for (const result of results) {
+    const response = await fetch('http://localhost:8080/api/saveRaceResult', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        racer: result.runnerName,
+        time: result.time,
+        checkpoint: result.checkpoint,
+      }),
+    });
 
-      if (!response.ok) {
-        console.error('Failed to submit result:', await response.text());
-      }
+    if (!response.ok) {
+      console.error('Failed to submit result:', await response.text());
+      return;
     }
-
-    alert('All results submitted to the server!');
-    localStorage.removeItem('raceResults'); // Clear after successful submission
-    renderRaceResults(); // Refresh UI
-  } catch (err) {
-    console.error('Error submitting to server:', err);
-    alert('Error submitting results to server.');
   }
+
+  console.log('All results submitted to the server!');
+  localStorage.removeItem('raceResults');
+  renderRaceResults();
 }
 
 function updateRacer(id, runnerName, checkpoint) {
@@ -203,18 +199,18 @@ function clearLocalData() {
 }
 
 async function clearData() {
-  try {
-    const res = await fetch('http://localhost:8080/api/clearRaceResults', {
-      method: 'DELETE',
-    });
+  const res = await fetch('http://localhost:8080/api/clearRaceResults', {
+    method: 'DELETE',
+  });
 
-    if (!res.ok) throw new Error(`Failed to clear: ${res.status}`);
-
-    console.log((await res.json()).message);
-  } catch (err) {
-    console.error('Error clearing results:', err);
+  if (!res.ok) {
+    console.error(`Failed to clear: ${res.status}`);
     alert('Failed to clear race results.');
+    return;
   }
+
+  const data = await res.json();
+  console.log(data.message);
 }
 
 // =======================
@@ -289,7 +285,6 @@ document.querySelector('#generateTables').addEventListener('click', () => {
   const container = document.querySelector('#checkpointsContainer');
   const template = document.querySelector('#checkpointTemplate');
 
-  // Clear any previous checkpoints
   container.innerHTML = '';
 
   // Validate the number of checkpoints
@@ -324,9 +319,14 @@ document.querySelector('#checkpointsContainer').addEventListener('click', functi
     const checkpointSection = event.target.closest('.checkpoint');
     const timesList = checkpointSection.querySelector('.times-list');
 
-    const li = document.createElement('li');
-    li.textContent = elapsedTime;
-    timesList.appendChild(li);
+    timesList.innerHTML = '';
+    const sortedTimes = [...checkpointData[checkpoint]].sort();
+
+    sortedTimes.forEach((time, index) => {
+      const li = document.createElement('li');
+      li.textContent = `Position ${index + 1} : ${time}`;
+      timesList.appendChild(li);
+    });
 
     addResult(elapsedTime, checkpoint);
   }

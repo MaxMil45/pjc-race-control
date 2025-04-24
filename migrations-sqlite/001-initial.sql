@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS race_results (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    racer_name TEXT NOT NULL,
+    runnerName TEXT NOT NULL,
     time TEXT NOT NULL,
     checkpoint INTEGER,
     date DATETIME DEFAULT CURRENT_TIMESTAMP

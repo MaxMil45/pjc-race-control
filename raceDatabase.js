@@ -1,30 +1,54 @@
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function init() {
-  const dbPath = path.resolve(__dirname, './database.sqlite');
-  const migrationsPath = path.resolve(__dirname, './migrations-sqlite');
-
   const db = await open({
-    filename: dbPath,
-    driver: sqlite3.Database
+    filename: './race.sqlite',
+    driver: sqlite3.Database,
   });
-
-  if (!db) {
-    return;
-  }
-
-  const migrationResult = await db.migrate({ migrationsPath });
-
-  if (!migrationResult) {
-    return;
-  }
-
+  await db.migrate({ migrationsPath: './migrations-sqlite' }); // optional
   return db;
 }
 
-export const db = await init();
+const dbConn = init();
+
+function currentTime() {
+  return new Date().toISOString().slice(0, 19).replace('T', ' ');
+}
+
+export async function saveRaceResult({ racer, time, checkpoint }) {
+  const db = await dbConn;
+  const date = currentTime();
+
+  const result = await db.run(
+    'INSERT INTO race_results (runnerName, time, checkpoint, date) VALUES (?, ?, ?, ?)',
+    [racer, time, checkpoint, date],
+  );
+
+  return result.lastID;
+}
+
+export async function getAllRaceResults() {
+  const db = await dbConn;
+  return db.all('SELECT * FROM race_results ORDER BY id ASC');
+}
+
+export async function updateRacerName({ id, runnerName }) {
+  const db = await dbConn;
+  const result = await db.run('UPDATE race_results SET runnerName = ? WHERE id = ?', [runnerName, id]);
+  return result.changes;
+}
+
+export async function clearRaceResults() {
+  const db = await dbConn;
+
+  console.log('Clearing race results from database...');
+
+  await db.run('DELETE FROM race_results');
+  await db.run("DELETE FROM sqlite_sequence WHERE name = 'race_results'");
+}
+
+export async function getCSVData() {
+  const db = await dbConn;
+  return db.all('SELECT * FROM race_results');
+}

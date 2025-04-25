@@ -10,22 +10,24 @@
 <input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required>
 <button id="generateTables">Add Checkpoints</button>
 
-<input type="text" id="participant" placeholder="Enter Racer Name">
-<button id="submitRacer"> Add</button>
+<h1 id="timer"> 00:00:00</h1>
 
 <h2>Start Timer</h2>
-<button id="startRace">Start Race</button>
-<button id="endRace" disabled>Stop Race</button>
+<section>
+  <button id="startRace">Start Race</button>
+  <button id="endRace" disabled>Stop Race</button>
+</section>
+
 <button id="clearResults">Clear Results</button>
-<button id="confirm" hidden>Confirm</button>
 <button id="sendData" >Send Data</button>
 <button id="exportResults" hidden>Export to CSV</button>
-    
-<h1 id="timer"> 00:00:00</h1>
 
 <section id="checkpointsContainer"></section>
 
 <h2>The Finish Times:</h2> 
+<input type="text" id="participant" placeholder="Enter Racer Name">
+<button id="submitRacer"> Add</button>
+
 <button id="submitResults" disabled>Submit Results</button>
 <ul id="finishTimes"></ul>
 

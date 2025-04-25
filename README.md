@@ -48,6 +48,10 @@ Replace this with DETAIL about your use of AI, listing of the prompts you used, 
 
 What went wrong in the beggining was that varibales names were every similar to the point i was mistaking name for another varaible. This was further made worse with me using camal case most of the time however sometimes using snake case. This made some things go wrong where I would have raceName and racer_Name, this made my code look uneaderable to a nomal person looking at my code. I therefor changed all occurances with the help of eslint.  
 
+How should I size buttons in a modern, responsive HTML/CSS web project? Should I use width and height, or is there a better way?
+
+
+
 ### Prompts to develop XYZ (example)
 A sequence of prompts helped me develop this feature:
 

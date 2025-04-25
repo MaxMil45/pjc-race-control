@@ -57,10 +57,11 @@ function startTimer() {
 
     const milliseconds = timeDiff % 1000;
     const seconds = Math.floor(timeDiff / 1000) % 60;
-    const minutes = Math.floor(timeDiff / 60000);
+    const minutes = Math.floor(timeDiff / 60000) % 60;
+    const hours = Math.floor(timeDiff / 3600000);
 
     const formattedMilliseconds = (milliseconds / 10).toFixed(0).padStart(2, '0');
-    elapsedTime = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${formattedMilliseconds}`;
+    elapsedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}:${formattedMilliseconds}`;
 
     document.querySelector('#timer').innerHTML = elapsedTime;
   }, 10);

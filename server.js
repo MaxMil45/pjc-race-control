@@ -11,13 +11,13 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.post('/api/saveRaceResult', async (req, res) => {
-  const { time, racer, checkpoint } = req.body;
+  const { time, racer, checkpoint, date } = req.body;
 
-  if (!time || !racer || checkpoint === undefined) {
-    return res.status(400).json({ error: 'Missing time, racer, or checkpoint' });
+  if (!time || !racer || checkpoint === undefined || date === undefined) {
+    return res.status(400).json({ error: 'Missing time, racer, checkpoint, or date' });
   }
 
-  const id = await raceDB.saveRaceResult({ racer, time, checkpoint });
+  const id = await raceDB.saveRaceResult({ racer, time, checkpoint, date });
 
   if (!id) {
     return res.status(500).json({ error: 'Failed to save race result' });

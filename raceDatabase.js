@@ -12,13 +12,8 @@ async function init() {
 
 const dbConn = init();
 
-function currentTime() {
-  return new Date().toISOString().slice(0, 19).replace('T', ' ');
-}
-
-export async function saveRaceResult({ racer, time, checkpoint }) {
+export async function saveRaceResult({ racer, time, checkpoint, date }) {
   const db = await dbConn;
-  const date = currentTime();
 
   const result = await db.run(
     'INSERT INTO race_results (runnerName, time, checkpoint, date) VALUES (?, ?, ?, ?)',

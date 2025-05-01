@@ -1,5 +1,6 @@
+// =======================
 // Global Timer Variables
-// ----------------------------------------------------------------------
+// =======================
 let startTime = 0;
 let elapsedTime = null;
 let timerInterval = null;
@@ -10,20 +11,45 @@ let pausedTime = 0;
 let numCheckpoint = 0;
 let numFinish = 0;
 const checkpointData = {};
+const addPressCounts = {};
 
 // =======================
-// Confirmation Dialog
+// Render Race Page Template
 // =======================
-const confirmDialog = document.querySelector('#confirmDialog');
-const confirmYes = document.querySelector('#confirmYes');
-const confirmNo = document.querySelector('#confirmNo');
-let onConfirm = null;
+document.querySelector('#showRacePage').addEventListener('click', () => {
+  const template = document.querySelector('#raceAppTemplate');
+  const page = template.content.cloneNode(true);
+  const content = document.querySelector('#pageContent');
+  content.innerHTML = ''; // Clear previous content
+  content.appendChild(page);
+
+  // Initialize event listeners after rendering template
+  initializeRaceEventListeners();
+});
+
+document.querySelector('#create').addEventListener('click', () => {
+  const template = document.querySelector('#tmp-screen-create');
+  const page = template.content.cloneNode(true);
+  const content = document.querySelector('#pageContent');
+  content.innerHTML = ''; // Clear previous content
+  content.appendChild(page);
+
+  // Initialize event listeners after rendering template
+});
+
+document.querySelector('#add').addEventListener('click', () => {
+  const template = document.querySelector('#tmp-screen-add');
+  const page = template.content.cloneNode(true);
+  const content = document.querySelector('#pageContent');
+  content.innerHTML = ''; // Clear previous content
+  content.appendChild(page);
+
+  // Initialize event listeners after rendering template
+});
 
 // =======================
-// Local Storage Functions
+// Local Storage Utilities
 // =======================
-
-// Save local results array in localStorage if not already
 if (!localStorage.getItem('raceResults')) {
   localStorage.setItem('raceResults', JSON.stringify([]));
 }
@@ -37,10 +63,8 @@ function setLocalResults(results) {
 }
 
 // =======================
-// Timer Controls
+// Timer Functions
 // =======================
-
-// Start or resume timer
 function startTimer() {
   if (isPaused) {
     startTime = Date.now() - pausedTime;
@@ -80,20 +104,24 @@ function stopTimer() {
   pausedTime = 0;
 }
 
+function currentTime() {
+  const now = new Date();
+  now.setHours(now.getHours() + 1); // add 1 hour
+  return now.toISOString().slice(0, 19).replace('T', ' ');
+}
+
 // =======================
 // Race Result Functions
 // =======================
-
-// Save result locally instead of sending to server
 function saveResultLocally() {
+  const RecordedTime = currentTime();
   racerName += 1;
   const results = getLocalResults();
-  results.push({ id: racerName, runnerName: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish });
+  results.push({ id: racerName, runnerName: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish, date: RecordedTime });
   setLocalResults(results);
   renderRaceResults();
 }
 
-// Submit local results to server
 async function submitToServer() {
   const results = getLocalResults();
 
@@ -110,6 +138,7 @@ async function submitToServer() {
         racer: result.runnerName,
         time: result.time,
         checkpoint: result.checkpoint,
+        date: result.date,
       }),
     });
 
@@ -125,19 +154,11 @@ async function submitToServer() {
 }
 
 function updateRacer(id, runnerName, checkpoint) {
-  console.log(`Updating racer with ID ${id} to name "${runnerName}"`);
-
   const results = getLocalResults();
-  console.log('Current results:', results);
 
   const updated = results.map((res) =>
     res.id === id && res.checkpoint === checkpoint ? { ...res, runnerName } : res,
   );
-
-  const foundMatch = results.some(res => res.id === id);
-  if (!foundMatch) {
-    console.warn(`No result with ID ${id} was found to update.`);
-  }
 
   setLocalResults(updated);
   renderRaceResults();
@@ -149,7 +170,6 @@ function renderRaceResults() {
   finishTimes.innerHTML = '';
 
   const ul = document.createElement('ul');
-
   results
     .filter(result => result.checkpoint === numFinish)
     .forEach(result => {
@@ -159,6 +179,21 @@ function renderRaceResults() {
     });
 
   finishTimes.appendChild(ul);
+}
+
+function renderCheckpointRacers(checkpoint) {
+  const results = getLocalResults();
+  const checkpointSection = document.querySelector(`.checkpoint[data-checkpoint="${checkpoint}"]`);
+  const racerList = checkpointSection.querySelector('.times-list');
+  racerList.innerHTML = '';
+
+  const filteredResults = results.filter(result => result.checkpoint === checkpoint);
+
+  filteredResults.forEach(result => {
+    const li = document.createElement('li');
+    li.textContent = `${result.id}: ${result.runnerName} - ${result.time}`;
+    racerList.appendChild(li);
+  });
 }
 
 function addResult(time, checkpoint) {
@@ -171,18 +206,9 @@ function addResult(time, checkpoint) {
   setLocalResults(results);
 }
 
-// Function to open the custom dialog with a callback to execute on confirmation
-function openConfirmDialog(callback) {
-  onConfirm = callback;
-  confirmDialog.showModal();
-  confirmYes.focus();
-}
-
-// Function to close the dialog
-function closeConfirmDialog() {
-  confirmDialog.close();
-}
-
+// =======================
+// Clear Data
+// =======================
 function clearLocalData() {
   localStorage.removeItem('raceResults');
   racerName = 0;
@@ -215,120 +241,156 @@ async function clearData() {
 }
 
 // =======================
-// Event Listeners
+// Dynamic Event Listener Initialization
 // =======================
+function initializeRaceEventListeners() {
+  const confirmDialog = document.querySelector('#confirmDialog');
+  const confirmYes = document.querySelector('#confirmYes');
+  const confirmNo = document.querySelector('#confirmNo');
 
-document.querySelector('#startRace').addEventListener('click', () => {
-  startTimer();
-  document.querySelector('#startRace').disabled = true;
-  document.querySelector('#endRace').disabled = false;
-  document.querySelector('#submitResults').disabled = false;
-});
+  let onConfirm = null;
 
-document.querySelector('#endRace').addEventListener('click', () => {
-  pauseTimer();
-  document.querySelector('#startRace').disabled = false;
-  document.querySelector('#endRace').disabled = true;
-  document.querySelector('#submitResults').disabled = true;
-  document.querySelector('#clearResults').disabled = false;
-  document.querySelector('#startRace').textContent = 'Resume';
-  document.querySelector('#exportResults').hidden = false;
-});
+  function openConfirmDialog(callback) {
+    onConfirm = callback;
+    confirmDialog.showModal();
+    confirmYes.focus();
+  }
 
-document.querySelector('#clearResults').addEventListener('click', () => {
-  openConfirmDialog(() => {
-    clearLocalData();
-    clearData();
-    document.querySelector('#clearResults').disabled = true;
-    document.querySelector('#startRace').textContent = 'Start Race';
+  function closeConfirmDialog() {
+    confirmDialog.close();
+  }
+
+  confirmYes.addEventListener('click', () => {
+    if (typeof onConfirm === 'function') onConfirm();
+    closeConfirmDialog();
   });
-});
 
-document.querySelector('#submitResults').addEventListener('click', () => {
-  saveResultLocally();
-});
+  confirmNo.addEventListener('click', closeConfirmDialog);
 
-document.querySelector('#submitRacer').addEventListener('click', async () => {
-  const racerInput = document.querySelector('#participant');
-  count += 1;
-  const id = count;
-  const runnerName = racerInput.value.trim();
-  const checkpoint = numFinish;
+  document.querySelector('#startRace').addEventListener('click', () => {
+    startTimer();
+    document.querySelector('#startRace').disabled = true;
+    document.querySelector('#endRace').disabled = false;
+    document.querySelector('#submitResults').disabled = false;
+  });
 
-  if (runnerName !== '') {
-    await updateRacer(id, runnerName, checkpoint);
-    racerInput.value = '';
-  }
+  document.querySelector('#endRace').addEventListener('click', () => {
+    pauseTimer();
+    document.querySelector('#startRace').disabled = false;
+    document.querySelector('#endRace').disabled = true;
+    document.querySelector('#submitResults').disabled = true;
+    document.querySelector('#clearResults').disabled = false;
+    document.querySelector('#startRace').textContent = 'Resume';
+    document.querySelector('#exportResults').hidden = false;
+  });
 
-  renderRaceResults();
-});
-
-document.querySelector('#exportResults').addEventListener('click', () => {
-  window.location.href = 'http://localhost:8080/api/exportRaceResults';
-});
-
-document.querySelector('#sendData').addEventListener('click', async () => {
-  await submitToServer();
-});
-
-confirmYes.addEventListener('click', () => {
-  if (typeof onConfirm === 'function') onConfirm();
-  closeConfirmDialog();
-});
-
-// Event listener for 'No' button in the confirmation dialog
-confirmNo.addEventListener('click', closeConfirmDialog);
-
-document.querySelector('#generateTables').addEventListener('click', () => {
-  // Get the number of checkpoints
-  numCheckpoint = parseInt(document.querySelector('#checkpointLocation').value);
-  numFinish = numCheckpoint + 1;
-  const container = document.querySelector('#checkpointsContainer');
-  const template = document.querySelector('#checkpointTemplate');
-
-  container.innerHTML = '';
-
-  // Validate the number of checkpoints
-  if (isNaN(numCheckpoint) || numCheckpoint <= 0) {
-    alert('Please enter a valid number of checkpoints.');
-    return;
-  }
-
-  for (let i = 1; i <= numCheckpoint; i++) {
-    const clone = template.content.cloneNode(true);
-
-    // Set the checkpoint number and button data
-    clone.querySelector('.checkpoint-number').textContent = i;
-    clone.querySelector('.checkpoint-button').dataset.checkpoint = i;
-    clone.querySelector('.times-list').id = `timesList-${i}`;
-
-    container.appendChild(clone);
-
-    checkpointData[i] = [];
-  }
-});
-
-// Use event delegation to handle clicks on dynamically created checkpoint buttons
-document.querySelector('#checkpointsContainer').addEventListener('click', function (event) {
-  if (event.target.classList.contains('checkpoint-button')) {
-    const checkpoint = parseInt(event.target.dataset.checkpoint);
-
-    checkpointData[checkpoint].push(elapsedTime);
-
-    console.log(`Checkpoint ${checkpoint} times:`, checkpointData[checkpoint]);
-
-    const checkpointSection = event.target.closest('.checkpoint');
-    const timesList = checkpointSection.querySelector('.times-list');
-
-    timesList.innerHTML = '';
-    const sortedTimes = [...checkpointData[checkpoint]].sort();
-
-    sortedTimes.forEach((time, index) => {
-      const li = document.createElement('li');
-      li.textContent = `Position ${index + 1} : ${time}`;
-      timesList.appendChild(li);
+  document.querySelector('#clearResults').addEventListener('click', () => {
+    openConfirmDialog(() => {
+      clearLocalData();
+      clearData();
+      document.querySelector('#clearResults').disabled = true;
+      document.querySelector('#startRace').textContent = 'Start Race';
     });
+  });
 
-    addResult(elapsedTime, checkpoint);
-  }
-});
+  document.querySelector('#submitResults').addEventListener('click', () => {
+    saveResultLocally();
+  });
+
+  document.querySelector('#submitRacer').addEventListener('click', async () => {
+    const racerInput = document.querySelector('#participant');
+    count += 1;
+    const id = count;
+    const runnerName = racerInput.value.trim();
+    const checkpoint = numFinish;
+
+    if (runnerName !== '') {
+      await updateRacer(id, runnerName, checkpoint);
+      racerInput.value = '';
+    }
+
+    renderRaceResults();
+  });
+
+  document.querySelector('#exportResults').addEventListener('click', () => {
+    window.location.href = 'http://localhost:8080/api/exportRaceResults';
+  });
+
+  document.querySelector('#sendData').addEventListener('click', async () => {
+    await submitToServer();
+  });
+
+  document.querySelector('#generateTables').addEventListener('click', () => {
+    numCheckpoint = parseInt(document.querySelector('#checkpointLocation').value);
+    numFinish = numCheckpoint + 1;
+    const container = document.querySelector('#checkpointsContainer');
+    const template = document.querySelector('#checkpointTemplate');
+
+    container.innerHTML = '';
+
+    if (isNaN(numCheckpoint) || numCheckpoint <= 0) {
+      alert('Please enter a valid number of checkpoints.');
+      return;
+    }
+
+    for (let i = 1; i <= numCheckpoint; i++) {
+      const clone = template.content.cloneNode(true);
+      const section = clone.querySelector('.checkpoint');
+
+      section.dataset.checkpoint = i;
+
+      clone.querySelector('.checkpoint-number').textContent = i;
+      clone.querySelector('.checkpoint-button').dataset.checkpoint = i;
+      clone.querySelector('.checkpoint-update').dataset.checkpoint = i;
+
+      clone.querySelector('.times-list').id = `timesList-${i}`;
+
+      container.appendChild(clone);
+      checkpointData[i] = [];
+    }
+  });
+
+  document.querySelector('#checkpointsContainer').addEventListener('click', function (event) {
+    if (event.target.classList.contains('checkpoint-update')) {
+      const checkpointSection = event.target.closest('.checkpoint');
+
+      const checkpoint = parseInt(event.target.dataset.checkpoint);
+
+      const racerNameInput = checkpointSection.querySelector('.racer-name');
+      const racerName = racerNameInput.value;
+
+      if (!addPressCounts[checkpoint]) {
+        addPressCounts[checkpoint] = 1;
+      } else {
+        addPressCounts[checkpoint]++;
+      }
+
+      const idForThisEntry = addPressCounts[checkpoint];
+
+      updateRacer(idForThisEntry, racerName, checkpoint);
+      renderCheckpointRacers(checkpoint);
+
+      racerNameInput.value = '';
+    }
+
+    if (event.target.classList.contains('checkpoint-button')) {
+      const checkpoint = parseInt(event.target.dataset.checkpoint);
+      checkpointData[checkpoint].push(elapsedTime);
+
+      const checkpointSection = event.target.closest('.checkpoint');
+      const timesList = checkpointSection.querySelector('.times-list');
+
+      timesList.innerHTML = '';
+      const sortedTimes = [...checkpointData[checkpoint]].sort();
+      console.log('Checkpoint:', checkpoint);
+
+      sortedTimes.forEach((time, index) => {
+        const li = document.createElement('li');
+        li.textContent = `Position ${index + 1} : ${time}`;
+        timesList.appendChild(li);
+      });
+
+      addResult(elapsedTime, checkpoint);
+    }
+  });
+}

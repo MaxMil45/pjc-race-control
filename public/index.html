@@ -1,57 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multi-Page Race App</title>
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Race Control</title>
+  <!-- Navigation -->
+  <nav>
+    <button id="create">Create or Select Race</button>
+    <button id="add" >Add Users</button>
+    <button id="showRacePage">Race Page</button>
+    <!-- Future buttons go here -->
+  </nav>
 
-<h1>Welcome to Race </h1> 
+  <!-- Placeholder for the template content -->
+  <div id="pageContent"></div>
 
-<input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required>
-<button id="generateTables">Add Checkpoints</button>
+  <!-- CREATE OR SELECT RACE -->
+  <template id="tmp-screen-create">
+    <section class="screen">
+      <h2>Create or Select Race</h2>
+      <h3>Choose an existing race</h3>
+      <select id="existingRaces">
+        <option value="">Select a Race...</option>
+      </select>
+      <button id="selectRaceBtn" disabled>Select Race</button>
 
-<h1 id="timer"> 00:00:00:00</h1>
+      <h3>Create a New Race</h3>
+      <input type="text" id="raceName" placeholder="Enter race name" />
+      <button id="createRaceBtn">Create Race</button>
+    </section>
+  </template>
 
-<h2>Start Timer</h2>
-<section>
-  <button id="startRace">Start Race</button>
-  <button id="endRace" disabled>Stop Race</button>
-</section>
+  <!-- ADD USERS -->
+  <template id="tmp-screen-add">
+    <section class="screen">
+      <h2>Add Users to Race: <span id="raceNameDisplayAdd"></span></h2>
+      <input type="text" id="newUserName" placeholder="Enter participant name" />
+      <button id="addUser">Add User</button>
+      <ul id="userList"></ul>
+    </section>
+  </template>
 
-<button id="clearResults">Clear Results</button>
-<button id="sendData" >Send Data</button>
-<button id="exportResults" hidden>Export to CSV</button>
+  <!-- RACE PAGE TEMPLATE -->
+  <template id="raceAppTemplate">
+    <div class="race-app">
+      <header>
+        <h1>Welcome to Race</h1>
+      </header>
 
-<section id="checkpointsContainer"></section>
+      <main>
+        <section>
+          <input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required />
+          <button id="generateTables">Add Checkpoints</button>
+        </section>
 
-<h2>The Finish Times:</h2> 
-<input type="text" id="participant" placeholder="Enter Racer Name">
-<button id="submitRacer"> Add</button>
+        <section>
+          <h2 id="timer">00:00:00:00</h2>
+          <div>
+            <h3>Race Controls</h3>
+            <button id="startRace">Start Race</button>
+            <button id="endRace" disabled>Stop Race</button>
+          </div>
+        </section>
 
-<button id="submitResults" disabled>Submit Results</button>
-<ul id="finishTimes"></ul>
+        <section>
+          <button id="clearResults">Clear Results</button>
+          <button id="sendData">Send Data</button>
+          <button id="exportResults" hidden>Export to CSV</button>
+        </section>
 
-<dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
-  <h2 id="confirmTitle">Confirm Action</h2>
-  <p id="confirmText">Are you sure you want to clear all race results?</p>
-  <form method="dialog">
-    <button id="confirmYes">Yes</button>
-    <button id="confirmNo">Cancel</button>
-  </form>
-</dialog>
+        <section id="checkpointsContainer"></section>
 
-<template id="checkpointTemplate">
-  <section class="checkpoint" aria-labelledby="checkpoint-heading">
-    <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
-    <button class="checkpoint-button" data-checkpoint="">Record Time</button>
-  
-    <h4>Recorded Times:</h4>
-    <ul class="times-list" aria-label="Checkpoint times list">
-      <!-- Times are here -->
-    </ul>
-  </section>
-</template>
+        <section>
+          <h2>The Finish Times:</h2>
+          <input type="text" id="participant" placeholder="Enter Racer Name" />
+          <button id="submitRacer">Add</button>
+          <button id="submitResults" disabled>Submit Results</button>
+          <ul id="finishTimes"></ul>
+        </section>
+      </main>
 
-<link rel="stylesheet" href="index.css">
-<script src="function.js"></script>
+      <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+        <h2 id="confirmTitle">Confirm Action</h2>
+        <p id="confirmText">Are you sure you want to clear all race results?</p>
+        <form method="dialog">
+          <button id="confirmYes">Yes</button>
+          <button id="confirmNo">Cancel</button>
+        </form>
+      </dialog>
+
+      <template id="checkpointTemplate">
+        <section class="checkpoint" aria-labelledby="checkpoint-heading">
+          <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
+
+          <input type="text" class="racer-name" placeholder="Enter Racer Name" />
+          <button class="checkpoint-update" data-checkpoint="">Add</button>
+
+          <button class="checkpoint-button" data-checkpoint="">Record Time</button>
+          <h4>Recorded Times:</h4>
+          <ul class="times-list" aria-label="Checkpoint times list"></ul>
+        </section>
+      </template>
+    </div>
+  </template>
+
+  <script src="function.js"></script>
+</body>
 </html>

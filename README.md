@@ -51,6 +51,22 @@ What went wrong in the beggining was that varibales names were every similar to 
 How should I size buttons in a modern, responsive HTML/CSS web project? Should I use width and height, or is there a better way?
 
 
+🔴 Problem:
+This part of your server-side code is wrong:
+
+if (!time || !racer || checkpoint || date === undefined) {
+  return res.status(400).json({ error: 'Missing time, racer, or checkpoint' });
+}
+
+checkpoint || date === undefined will always evaluate to true if checkpoint has any value, even a valid one like 1, because JavaScript treats non-zero numbers as truthy.
+
+✅ Fix it like this:
+
+if (!time || !racer || checkpoint === undefined || date === undefined) {
+  return res.status(400).json({ error: 'Missing time, racer, checkpoint, or date' });
+}
+Now it correctly checks that all four values are present.
+
 
 ### Prompts to develop XYZ (example)
 A sequence of prompts helped me develop this feature:

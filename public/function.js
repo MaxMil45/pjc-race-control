@@ -15,6 +15,7 @@ const checkpointData = {};
 const addPressCounts = {};
 const races = {};
 let selectedRace = '';
+const finishQueue = [];
 
 // =======================
 // Render Race Page Template
@@ -50,6 +51,18 @@ document.querySelector('#add').addEventListener('click', () => {
 
   // Initialize event listeners after rendering template
   initializeAddUserListeners();
+});
+
+document.querySelector('#leader').addEventListener('click', () => {
+  const template = document.querySelector('#leaderboardTemplate');
+  const page = template.content.cloneNode(true);
+  const content = document.querySelector('#pageContent');
+
+  content.innerHTML = '';
+  content.appendChild(page);
+
+  // Ensure DOM elements now exist before rendering
+  initializeLeaderboardPage();
 });
 
 // =======================
@@ -116,6 +129,69 @@ function currentTime() {
 }
 
 // =======================
+// Render Learder Board Functions
+// =======================
+function renderLeaderboard(tbody) {
+  const results = getLocalResults();
+  tbody.innerHTML = ''; // Clear old content
+
+  if (results.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = '<td colspan="4">No results to display.</td>';
+    tbody.appendChild(row);
+    return;
+  }
+
+  // Group results by runner name
+  const runnerGroups = {};
+  results.forEach(res => {
+    if (!runnerGroups[res.runnerName]) {
+      runnerGroups[res.runnerName] = [];
+    }
+    runnerGroups[res.runnerName].push(res);
+  });
+
+  // Convert grouped runners to array and sort by highest checkpoint
+  const groupedArray = Object.entries(runnerGroups).sort(([, a], [, b]) => {
+    const maxA = Math.max(...a.map(r => r.checkpoint));
+    const maxB = Math.max(...b.map(r => r.checkpoint));
+    return maxB - maxA;
+  });
+
+  let rank = 1;
+  groupedArray.forEach(([runnerName, entries]) => {
+    // Create main row with summary info
+    const mainRow = document.createElement('tr');
+    const detailsCell = document.createElement('td');
+    detailsCell.colSpan = 4;
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.innerHTML = `
+      <strong>Rank ${rank}</strong> – <strong>${runnerName}</strong>
+    `;
+    details.appendChild(summary);
+
+    // Create a list of this runner's checkpoint times
+    const list = document.createElement('ul');
+    entries.sort((a, b) => a.checkpoint - b.checkpoint);
+    entries.forEach(e => {
+      const item = document.createElement('li');
+      item.textContent = `Checkpoint ${e.checkpoint}: ${e.time}`;
+      list.appendChild(item);
+    });
+
+    details.appendChild(list);
+    detailsCell.appendChild(details);
+    mainRow.appendChild(detailsCell);
+    tbody.appendChild(mainRow);
+
+    rank++;
+  });
+}
+
+
+// =======================
 // Race Result Functions
 // =======================
 function saveResultLocally() {
@@ -125,6 +201,26 @@ function saveResultLocally() {
   results.push({ id: racerName, runnerName: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish, date: RecordedTime });
   setLocalResults(results);
   renderRaceResults();
+}
+
+function addResult(time, checkpoint) {
+  const results = getLocalResults();
+
+  // Filter only results for the current checkpoint
+  const checkpointResults = results.filter(res => res.checkpoint === checkpoint);
+
+  // ID based on how many entries exist at this checkpoint
+  const id = checkpointResults.length + 1;
+
+  const runnerName = `Racer ${id}`;
+  const RecordedTime = currentTime();
+  const newResult = { id, runnerName, time, checkpoint, date: RecordedTime };
+
+  // Add the new result to the list
+  results.push(newResult);
+
+  // Save the updated list back to local storage
+  setLocalResults(results);
 }
 
 async function submitToServer() {
@@ -201,25 +297,6 @@ function renderCheckpointRacers(checkpoint) {
   });
 }
 
-function addResult(time, checkpoint) {
-  const results = getLocalResults();
-
-  const id = results.length + 1;
-
-  const runnerName = `Racer ${id}`;
-
-  const RecordedTime = currentTime();
-
-  const newResult = { id, runnerName, time, checkpoint, date: RecordedTime };
-
-  // Add the new result to the list
-  results.push(newResult);
-
-  // Save the updated list back to local storage
-  setLocalResults(results);
-}
-
-
 // =======================
 // Clear Data
 // =======================
@@ -238,6 +315,8 @@ function clearLocalData() {
   document.querySelectorAll('.times-list').forEach(list => {
     list.innerHTML = '';
   });
+
+  finishQueue.length = 0;
 
   renderRaceResults();
   stopTimer();
@@ -263,6 +342,7 @@ async function clearData() {
 // =======================
 
 function initializeRaceEventListeners() {
+  renderRaceResults();
   const confirmDialog = document.querySelector('#confirmDialog');
   const confirmYes = document.querySelector('#confirmYes');
   const confirmNo = document.querySelector('#confirmNo');
@@ -312,10 +392,17 @@ function initializeRaceEventListeners() {
   });
 
   document.querySelector('#submitResults').addEventListener('click', () => {
+    finishQueue.push(true);
     saveResultLocally();
   });
 
   document.querySelector('#submitRacer').addEventListener('click', async () => {
+    if (finishQueue.length === 0) {
+      alert('Please press the "Record Time" button before submitting a runner.');
+      return;
+    }
+    finishQueue.shift();
+
     const racerInput = document.querySelector('#participant');
     const runnerNumberInput = racerInput.value.trim();
     const checkpoint = numFinish;
@@ -385,12 +472,15 @@ function initializeRaceEventListeners() {
       const checkpointSection = event.target.closest('.checkpoint');
       const checkpoint = parseInt(event.target.dataset.checkpoint);
 
+      if (!checkpointData[checkpoint] || checkpointData[checkpoint].length <= (addPressCounts[checkpoint] || 0)) {
+        alert('Please press the "Record Time" button before updating a user.');
+        return;
+      }
+
       const racerNameInput = checkpointSection.querySelector('.racer-name');
-      const racerNumber = racerNameInput.value; // Runner's number from the input
+      const racerNumber = racerNameInput.value;
 
       const validRunners = races[selectedRace] || [];
-
-      // Find the runner by number (racerNumber) in the valid runners list
       const foundRunner = validRunners.find(runner => runner.number === racerNumber);
 
       if (!foundRunner) {
@@ -406,11 +496,8 @@ function initializeRaceEventListeners() {
 
       const idForThisEntry = addPressCounts[checkpoint];
 
-      // Update the racer and render the checkpoint racers
       updateRacer(idForThisEntry, foundRunner.name, checkpoint);
       renderCheckpointRacers(checkpoint);
-
-      // Clear the racer name input field after processing
       racerNameInput.value = '';
     }
 
@@ -439,6 +526,7 @@ function initializeRaceEventListeners() {
       });
       // Add the result for this checkpoint
       addResult(elapsedTime, checkpoint);
+      renderCheckpointRacers(checkpoint);
     }
   });
 }
@@ -488,29 +576,21 @@ function initializeAddUserListeners() {
   });
 }
 
-
 function initializeCreateEventListeners() {
-  const raceSelect = document.querySelector('#existingRaces');
-  const selectRaceBtn = document.querySelector('#selectRaceBtn');
+  const raceButtonsContainer = document.querySelector('#raceButtons');
   const createRaceBtn = document.querySelector('#createRaceBtn');
   const raceNameInput = document.querySelector('#raceName');
 
-  // Update dropdown with current races
-  raceSelect.innerHTML = '<option value="">Select a Race...</option>';
+  raceButtonsContainer.innerHTML = '';
+
   Object.keys(races).forEach(name => {
-    const option = document.createElement('option');
-    option.value = name;
-    option.textContent = name;
-    raceSelect.appendChild(option);
-  });
-
-  raceSelect.addEventListener('change', () => {
-    selectRaceBtn.disabled = !raceSelect.value;
-  });
-
-  selectRaceBtn.addEventListener('click', () => {
-    selectedRace = raceSelect.value;
-    document.querySelector('#add').click(); // Trigger rendering of add user screen
+    const button = document.createElement('button');
+    button.textContent = name;
+    button.addEventListener('click', () => {
+      selectedRace = name;
+      document.querySelector('#add').click(); // Trigger rendering of add user screen
+    });
+    raceButtonsContainer.appendChild(button);
   });
 
   createRaceBtn.addEventListener('click', () => {
@@ -523,4 +603,13 @@ function initializeCreateEventListeners() {
       alert('Enter a unique race name.');
     }
   });
+}
+
+function initializeLeaderboardPage() {
+  const tbody = document.querySelector('#leaderboardBody');
+  if (tbody) {
+    renderLeaderboard(tbody); // Render from localStorage
+  } else {
+    console.error('Leaderboard table body not found.');
+  }
 }

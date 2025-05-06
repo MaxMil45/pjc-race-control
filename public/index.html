@@ -13,6 +13,7 @@
     <button id="create">Create or Select Race</button>
     <button id="add" >Add Users</button>
     <button id="showRacePage">Race Page</button>
+    <button id="leader">Leaderboard</button>
     <!-- Future buttons go here -->
   </nav>
 
@@ -23,15 +24,14 @@
   <template id="tmp-screen-create">
     <section class="screen">
       <h2>Create or Select Race</h2>
+  
       <h3>Choose an existing race</h3>
-      <select id="existingRaces">
-        <option value="">Select a Race...</option>
-      </select>
-      <button id="selectRaceBtn" disabled>Select Race</button>
-
+  
       <h3>Create a New Race</h3>
       <input type="text" id="raceName" placeholder="Enter race name" />
       <button id="createRaceBtn">Create Race</button>
+
+      <section id="raceButtons"></section>
     </section>
   </template>
 
@@ -78,7 +78,7 @@
           <h2>The Finish Times:</h2>
           <input type="text" id="participant" placeholder="Enter Racer Name" />
           <button id="submitRacer">Add</button>
-          <button id="submitResults" disabled>Submit Results</button>
+          <button id="submitResults" >Submit Results</button>
           <ul id="finishTimes"></ul>
         </section>
       </main>
@@ -105,6 +105,20 @@
         </section>
       </template>
     </div>
+  </template>
+
+  <template id="leaderboardTemplate">
+    <section id="leaderboard">
+      <h2>Leaderboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th colspan="4">Leaderboard</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody"></tbody>
+      </table>
+    </section>
   </template>
 
   <script src="function.js"></script>

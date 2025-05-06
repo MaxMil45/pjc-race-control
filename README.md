@@ -67,6 +67,19 @@ if (!time || !racer || checkpoint === undefined || date === undefined) {
 }
 Now it correctly checks that all four values are present.
 
+-------------------LeaderBoard-----------------------------
+Every time i am trying to load my leardboard there an error like this when it is updating live
+
+function.js:91 
+ Uncaught TypeError: Cannot set properties of undefined (setting 'innerHTML')
+    at renderLeaderboard (function.js:91:19)
+    at addResult (function.js:211:3)
+    at HTMLElement.<anonymous> (function.js:515:7)
+renderLeaderboard	@	function.js:91
+addResult	@	function.js:211
+(anonymous)	@	function.js:515
+
+
 
 ### Prompts to develop XYZ (example)
 A sequence of prompts helped me develop this feature:

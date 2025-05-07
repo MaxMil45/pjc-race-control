@@ -194,15 +194,6 @@ function renderLeaderboard(tbody) {
 // =======================
 // Race Result Functions
 // =======================
-function saveResultLocally() {
-  const RecordedTime = currentTime();
-  racerName += 1;
-  const results = getLocalResults();
-  results.push({ id: racerName, runnerName: `Racer ${racerName}`, time: elapsedTime, checkpoint: numFinish, date: RecordedTime });
-  setLocalResults(results);
-  renderRaceResults();
-}
-
 function addResult(time, checkpoint) {
   const results = getLocalResults();
 
@@ -215,6 +206,8 @@ function addResult(time, checkpoint) {
   const runnerName = `Racer ${id}`;
   const RecordedTime = currentTime();
   const newResult = { id, runnerName, time, checkpoint, date: RecordedTime };
+
+  console.log('New result:', newResult);
 
   // Add the new result to the list
   results.push(newResult);
@@ -250,7 +243,7 @@ async function submitToServer() {
   }
 
   console.log('All results submitted to the server!');
-  localStorage.removeItem('raceResults');
+  // localStorage.removeItem('raceResults');
   renderRaceResults();
 }
 
@@ -393,7 +386,9 @@ function initializeRaceEventListeners() {
 
   document.querySelector('#submitResults').addEventListener('click', () => {
     finishQueue.push(true);
-    saveResultLocally();
+
+    addResult(elapsedTime, numFinish);
+    renderRaceResults();
   });
 
   document.querySelector('#submitRacer').addEventListener('click', async () => {

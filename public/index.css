@@ -255,13 +255,13 @@ details ul {
 #raceButtons button {
   padding: 0.5rem 1rem;
   font-size: 0.95rem;
-  background-color: #e9ecef;
-  border: 1px solid #ccc;
+  background-color: #007bff;
+  border: 1px solid #ffffff;
   border-radius: 6px;
   cursor: pointer;
   transition: background-color 0.2s ease;
 }
 
 #raceButtons button:hover {
-  background-color: #d6d8db;
+  background-color: #0056b3;
 }

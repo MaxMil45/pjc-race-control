@@ -16,32 +16,61 @@ const races = {};
 let selectedRace = '';
 const finishQueue = [];
 
+const pageOrder = ['#tmp-screen-create', '#tmp-screen-add', '#raceAppTemplate', '#leaderboardTemplate'];
+let currentPageIndex = 1;
+
+
+// =======================
+// Page Template Loading
+// =======================
+
+document.addEventListener('DOMContentLoaded', () => {
+  showCreateRaceTemplate(); // Load on startup
+});
+
+function loadPageByIndex(index) {
+  const template = document.querySelector(pageOrder[index]);
+  if (!template) return;
+  const page = template.content.cloneNode(true);
+  const content = document.querySelector('#pageContent');
+  content.innerHTML = '';
+  content.appendChild(page);
+
+  currentPageIndex = index;
+
+  // Call correct initializer based on page
+  switch (pageOrder[index]) {
+    case '#tmp-screen-create':
+      initializeCreateEventListeners();
+      break;
+    case '#tmp-screen-add':
+      initializeAddUserListeners();
+      break;
+    case '#raceAppTemplate':
+      initializeRaceEventListeners();
+      break;
+    case '#leaderboardTemplate':
+      initializeLeaderboardPage();
+      break;
+  }
+}
+
+
 // =======================
 // Render Race Page Template
 // =======================
-document.querySelector('#showRacePage').addEventListener('click', () => {
-  const template = document.querySelector('#raceAppTemplate');
-  const page = template.content.cloneNode(true);
-  const content = document.querySelector('#pageContent');
-  content.innerHTML = ''; // Clear previous content
-  content.appendChild(page);
 
-  // Initialize event listeners after rendering template
-  initializeRaceEventListeners();
-});
-
-document.querySelector('#create').addEventListener('click', () => {
+function showCreateRaceTemplate() {
   const template = document.querySelector('#tmp-screen-create');
   const page = template.content.cloneNode(true);
   const content = document.querySelector('#pageContent');
   content.innerHTML = ''; // Clear previous content
   content.appendChild(page);
 
-  // Initialize event listeners after rendering template
   initializeCreateEventListeners();
-});
+}
 
-document.querySelector('#add').addEventListener('click', () => {
+function showAddUserTemplate() {
   const template = document.querySelector('#tmp-screen-add');
   const page = template.content.cloneNode(true);
   const content = document.querySelector('#pageContent');
@@ -50,19 +79,23 @@ document.querySelector('#add').addEventListener('click', () => {
 
   // Initialize event listeners after rendering template
   initializeAddUserListeners();
+  loadPageByIndex(1);
+}
+
+document.addEventListener('click', (e) => {
+  if (e.target.id === 'backBtn') {
+    if (currentPageIndex > 0) {
+      loadPageByIndex(currentPageIndex - 1);
+    }
+  }
+
+  if (e.target.id === 'forwardBtn') {
+    if (currentPageIndex < pageOrder.length - 1) {
+      loadPageByIndex(currentPageIndex + 1);
+    }
+  }
 });
 
-document.querySelector('#leader').addEventListener('click', () => {
-  const template = document.querySelector('#leaderboardTemplate');
-  const page = template.content.cloneNode(true);
-  const content = document.querySelector('#pageContent');
-
-  content.innerHTML = '';
-  content.appendChild(page);
-
-  // Ensure DOM elements now exist before rendering
-  initializeLeaderboardPage();
-});
 
 // =======================
 // Local Storage Utilities
@@ -324,7 +357,6 @@ async function clearData() {
 
   if (!res.ok) {
     console.error(`Failed to clear: ${res.status}`);
-    alert('Failed to clear race results.');
     return;
   }
 
@@ -607,7 +639,7 @@ function initializeCreateEventListeners() {
     button.textContent = name;
     button.addEventListener('click', () => {
       selectedRace = name;
-      document.querySelector('#add').click(); // Trigger rendering of add user screen
+      showAddUserTemplate(); // Trigger rendering of add user screen
     });
     raceButtonsContainer.appendChild(button);
   });
@@ -617,7 +649,7 @@ function initializeCreateEventListeners() {
     if (name && !races[name]) {
       races[name] = [];
       selectedRace = name;
-      document.querySelector('#add').click(); // Trigger rendering of add user screen
+      showAddUserTemplate(); // Trigger rendering of add user screen
     } else {
       alert('Enter a unique race name.');
     }

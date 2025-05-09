@@ -1,267 +1,113 @@
-/* General styles */
-body {
-  font-family: Arial, sans-serif;
+/* General Reset and Base Styling */
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
+}
+
+body {
+  font-family: sans-serif;
+  background: #f8f9fa;
   color: #333;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 100vh;
+  padding: 1em;
 }
 
-h1, h2, h3 {
-  color: #333;
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-h1 {
-  font-size: 2.5em;
-}
-
-h2 {
-  font-size: 1.8em;
-}
-
-h3 {
-  font-size: 1.5em;
-}
-
+/* Reusable Button Styles */
 button {
-  padding: 10px 20px;
-  font-size: 1em;
-  margin: 10px;
-  cursor: pointer;
-  border: none;
-  border-radius: 5px;
-  background-color: #4CAF50;
+  margin: 0.5em;
+  background: #2196f3;
   color: white;
-  transition: background-color 0.3s;
+  padding: 0.6em 1.2em;
+  border: none;
+  border-radius: 0.4em;
+  font-size: 1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.3s ease;
 }
 
 button:hover {
-  background-color: #45a049;
+  background: #1976d2;
 }
 
-input[type="text"], input[type="number"] {
-  padding: 10px;
-  font-size: 1em;
-  margin: 10px;
-  border-radius: 5px;
-  border: 1px solid #ccc;
-  width: 200px;
+/* Section Styling */
+.screen, .race-app, #leaderboard {
+  background: white;
+  padding: 1.5em;
+  border-radius: 0.5em;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  margin-bottom: 2em;
 }
 
-input[type="text"]:focus, input[type="number"]:focus {
-  border-color: #4CAF50;
+h1, h2, h3 {
+  margin-bottom: 0.5em;
 }
 
-h1#timer {
-  font-size: 12.5em;
-  text-align: center;
-  color: #333;
-  font-weight: bold;
-  margin-top: 20px;
-}
-
-#checkpointsContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-}
-
-#finishTimes {
-  list-style: none;
-  padding: 0;
-  margin-top: 20px;
-}
-
-#finishTimes li {
-  font-size: 1.2em;
-  margin: 5px 0;
-}
-
-#submitResults {
-  display: block;
-  width: 200px;
-  margin: 20px auto;
-}
-
-#confirmDialog {
-  width: 300px;
-  padding: 20px;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-#confirmDialog form {
+/* Flex Layout for Navigation Controls */
+#navControls {
   display: flex;
   justify-content: space-between;
+  margin-bottom: 1em;
 }
 
-#confirmDialog button {
-  background-color: #f44336;
-  color: white;
-  border-radius: 5px;
-  padding: 10px 20px;
-}
-
-#confirmDialog button#confirmNo {
-  background-color: #ccc;
-}
-
-.checkpoint {
-  background-color: #ffffff;
-  padding: 20px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.checkpoint h3 {
-  font-size: 1.5em;
-}
-
-.checkpoint-button {
-  background-color: #008CBA;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
+/* Input Fields */
+input[type="text"], input[type="number"] {
+  padding: 0.6em;
+  margin-bottom: 0.5em;
   width: 100%;
-  text-align: center;
-}
-
-.checkpoint-button:hover {
-  background-color: #007bb5;
-}
-
-.times-list {
-  list-style: none;
-  padding: 0;
-}
-
-.times-list li {
-  font-size: 1.1em;
-  margin-bottom: 5px;
-}
-
-#generateTables, #submitRacer {
-  width: 220px;
-  margin-top: 20px;
-}
-
-/* Centering all buttons */
-button, #generateTables, #submitRacer, #submitResults, #sendData, #exportResults, #startRace, #endRace, #clearResults {
-  display: inline-block;
-  margin: 20px;
-  text-align: center;
-  width: 220px;
-}
-
-#exportResults {
-  margin-top: 20px;
-}
-
-section > button {
-  display: inline-block;
-  margin: 10px;
-  padding: 2em 3em;
-  font-size: 1rem;
-  border-radius: 8px;
-}
-
-details summary {
-  cursor: pointer;
-  padding: 5px;
-  background: #f0f0f0;
-  border-radius: 5px;
-}
-
-details ul {
-  margin: 0;
-  padding-left: 20px;
-}
-
-/* --- Create or Select Race Screen Styles --- */
-
-.screen {
-  max-width: 600px;
-  margin: 50px auto;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
-  font-family: Arial, sans-serif;
-}
-
-.screen h2 {
-  font-size: 1.8rem;
-  text-align: center;
-  margin-bottom: 1.5rem;
-  color: #333;
-}
-
-.screen h3 {
-  font-size: 1.2rem;
-  margin-top: 1.5rem;
-  color: #444;
-}
-
-#raceName {
-  display: block;
-  width: 100%;
-  padding: 0.75rem;
-  margin: 0.5rem 0 1rem;
-  font-size: 1rem;
   border: 1px solid #ccc;
-  border-radius: 8px;
-  box-sizing: border-box;
+  border-radius: 0.4em;
 }
 
-#createRaceBtn {
-  display: inline-block;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  color: white;
-  background-color: #007bff;
+/* Leaderboard Table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1em;
+}
+
+table, th, td {
+  border: 1px solid #ccc;
+}
+
+th, td {
+  padding: 0.75em;
+  text-align: center;
+}
+
+/* Dialog Styling */
+dialog {
+  padding: 1.5em;
   border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+  border-radius: 0.5em;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.25);
 }
 
-#createRaceBtn:hover {
-  background-color: #0056b3;
+dialog::backdrop {
+  background: rgba(0,0,0,0.4);
 }
 
-#raceButtons {
-  margin-top: 2rem;
+.race-app main {
   display: flex;
+  justify-content: space-between;
+  gap: 1em;
   flex-wrap: wrap;
-  gap: 1rem;
-  justify-content: center;
 }
 
-#raceButtons button {
-  padding: 0.5rem 1rem;
-  font-size: 0.95rem;
-  background-color: #007bff;
-  border: 1px solid #ffffff;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
+.race-controls {
+  flex: 2;
+  min-width: 250px;
+  max-width: 400px;
 }
 
-#raceButtons button:hover {
-  background-color: #0056b3;
+#backBtn,
+#forwardBtn {
+  height: 2.5em;
+  width: 100%;
+  max-width: 150px;
+  font-size: 1em;
 }

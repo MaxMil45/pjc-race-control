@@ -26,7 +26,9 @@
 
       <h3>Create a New Race</h3>
       <input type="text" id="raceName" placeholder="Enter race name" />
+
       <button id="createRaceBtn">Create Race</button>
+      <button id="removeRaceBtn">Remove Race</button>
 
       <h3>Choose an existing race</h3>
       <section id="raceButtons"></section>
@@ -37,7 +39,7 @@
   <template id="tmp-screen-add">
     <nav id="navControls">
       <button id="backBtn">← Back</button>
-      <button id="forwardBtn">Forward →</button>
+      <button id="forwardBtn">Race Timer →</button>
     </nav>
     <section class="screen">
       <h2>Add Users to Race: <span id="raceNameDisplayAdd"></span></h2>
@@ -52,7 +54,7 @@
     <section class="race-app">
       <nav id="navControls">
         <button id="backBtn">← Back</button>
-        <button id="forwardBtn">Forward →</button>
+        <button id="forwardBtn">Leaderboard →</button>
       </nav>
 
       <header>
@@ -85,7 +87,7 @@
           <h2>The Finish Times:</h2>
           <input type="text" id="participant" placeholder="Enter Racer Name" />
           <button id="submitRacer">Add</button>
-          <button id="submitResults">Submit Results</button>
+          <button id="submitResults">Record Time</button>
           <ul id="finishTimes"></ul>
         </section>
       </main>

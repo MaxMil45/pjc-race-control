@@ -1,4 +1,4 @@
-CREATE TABLE race_results (
+CREATE TABLE IF NOT EXISTS race_results (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   runnerName TEXT NOT NULL,
   time TEXT NOT NULL,

@@ -6,7 +6,7 @@ async function init() {
     filename: './race.sqlite',
     driver: sqlite3.Database,
   });
-  await db.migrate({ migrationsPath: './migrations-sqlite' }); // optional
+  await db.migrate({ migrationsPath: './migrations-sqlite' });
   return db;
 }
 

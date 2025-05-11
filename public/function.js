@@ -12,7 +12,6 @@ let numCheckpoint = 0;
 let numFinish = 0;
 const checkpointData = {};
 const addPressCounts = {};
-const races = {};
 let selectedRace = '';
 const finishQueue = [];
 
@@ -110,6 +109,16 @@ function getLocalResults() {
 
 function setLocalResults(results) {
   localStorage.setItem('raceResults', JSON.stringify(results));
+}
+
+// Helper to get races from localStorage
+function getRaces() {
+  return JSON.parse(localStorage.getItem('races')) || {};
+}
+
+// Helper to save races to localStorage
+function saveRaces(races) {
+  localStorage.setItem('races', JSON.stringify(races));
 }
 
 // =======================
@@ -212,6 +221,11 @@ function renderLeaderboard(tbody) {
     const list = document.createElement('ul');
     entries.sort((a, b) => a.checkpoint - b.checkpoint);
     entries.forEach(e => {
+      if (e.checkpoint === numFinish) {
+        const finishTime = document.createElement('strong');
+        finishTime.textContent = `Finish Time: ${e.time}`;
+        list.appendChild(finishTime);
+      }
       const item = document.createElement('li');
       item.textContent = `Checkpoint ${e.checkpoint}: ${e.time}`;
       list.appendChild(item);
@@ -254,7 +268,7 @@ async function submitToServer() {
   const results = getLocalResults();
 
   if (!results || results.length === 0) {
-    alert('No results to submit!');
+    console.log('No results to submit!');
     return;
   }
 
@@ -346,6 +360,8 @@ function clearLocalData() {
 
   localStorage.removeItem('numCheckpoint');
 
+  count = 0;
+
   renderRaceResults();
   stopTimer();
 }
@@ -362,6 +378,18 @@ async function clearData() {
 
   const data = await res.json();
   console.log(data.message);
+}
+
+function deleteRace(raceName) {
+  const races = getRaces(); // Get current races from localStorage
+
+  if (races[raceName]) {
+    delete races[raceName]; // Remove the race by name
+    saveRaces(races); // Save the updated list back to localStorage
+    console.log(`${raceName} has been deleted.`);
+  } else {
+    console.log('Race not found.');
+  }
 }
 
 // =======================
@@ -412,7 +440,6 @@ function initializeRaceEventListeners() {
       hasStarted = true;
       isPaused = false;
       document.querySelector('#startRace').textContent = 'Pause';
-      document.querySelector('#submitResults').disabled = false;
     } else if (!isPaused) {
       pauseTimer();
       document.querySelector('#startRace').textContent = 'Resume';
@@ -443,8 +470,10 @@ function initializeRaceEventListeners() {
   });
 
   document.querySelector('#submitRacer').addEventListener('click', async () => {
+    const races = getRaces();
+
     if (finishQueue.length === 0) {
-      alert('Please press the "Record Time" button before submitting a runner.');
+      console.log('Please press the "Record Time" button before submitting a runner.');
       return;
     }
     finishQueue.shift();
@@ -460,7 +489,7 @@ function initializeRaceEventListeners() {
     const foundRunner = validRunners.find(runner => runner.number === runnerNumberInput);
 
     if (!foundRunner) {
-      alert('Invalid or unregistered runner number.');
+      console.log('Invalid or unregistered runner number.');
       return;
     }
 
@@ -493,9 +522,13 @@ function initializeRaceEventListeners() {
 
     container.innerHTML = '';
 
-    if (isNaN(numCheckpoint) || numCheckpoint <= 0) {
-      alert('Please enter a valid number of checkpoints.');
+    if (isNaN(numCheckpoint)) {
+      console.log('Please enter a valid number of checkpoints.');
       return;
+    }
+
+    if (numCheckpoint === 0) {
+      container.innerHTML = '';
     }
 
     for (let i = 1; i <= numCheckpoint; i++) {
@@ -518,13 +551,14 @@ function initializeRaceEventListeners() {
   });
 
   document.querySelector('#checkpointsContainer').addEventListener('click', function (event) {
+    const races = getRaces();
     // Check if the clicked element is the 'checkpoint-update' button
     if (event.target.classList.contains('checkpoint-update')) {
       const checkpointSection = event.target.closest('.checkpoint');
       const checkpoint = parseInt(event.target.dataset.checkpoint);
 
       if (!checkpointData[checkpoint] || checkpointData[checkpoint].length <= (addPressCounts[checkpoint] || 0)) {
-        alert('Please press the "Record Time" button before updating a user.');
+        console.log('Please press the "Record Time" button before updating a user.');
         return;
       }
 
@@ -535,7 +569,7 @@ function initializeRaceEventListeners() {
       const foundRunner = validRunners.find(runner => runner.number === racerNumber);
 
       if (!foundRunner) {
-        alert('Invalid or unregistered runner number.');
+        console.log('Invalid or unregistered runner number.');
         return;
       }
 
@@ -591,8 +625,11 @@ function initializeAddUserListeners() {
   raceNameDisplay.textContent = selectedRace;
 
   function updateUserList() {
+    const races = getRaces();
     userList.innerHTML = '';
-    races[selectedRace].forEach(user => {
+
+    const users = races[selectedRace] || [];
+    users.forEach(user => {
       const li = document.createElement('li');
       li.textContent = `${user.name} (#${user.number})`;
       userList.appendChild(li);
@@ -610,18 +647,25 @@ function initializeAddUserListeners() {
   updateUserList();
 
   addUserBtn.addEventListener('click', () => {
+    const races = getRaces();
     const name = newUserNameInput.value.trim();
     if (!name) return;
+
+    if (!races[selectedRace]) {
+      races[selectedRace] = [];
+    }
 
     const existingNumbers = races[selectedRace].map(u => u.number);
     const newNumber = generateUniqueNumber(existingNumbers);
 
     if (!newNumber) {
-      alert('Maximum participants reached for this race (999).');
+      console.log('Maximum participants reached for this race (999).');
       return;
     }
 
     races[selectedRace].push({ name, number: newNumber });
+    saveRaces(races); // Persist to localStorage
+
     newUserNameInput.value = '';
     updateUserList();
   });
@@ -631,29 +675,43 @@ function initializeCreateEventListeners() {
   const raceButtonsContainer = document.querySelector('#raceButtons');
   const createRaceBtn = document.querySelector('#createRaceBtn');
   const raceNameInput = document.querySelector('#raceName');
+  const removeRaceBtn = document.querySelector('#removeRaceBtn');
 
-  raceButtonsContainer.innerHTML = '';
+  function renderRaceButtons() {
+    raceButtonsContainer.innerHTML = '';
+    const races = getRaces();
 
-  Object.keys(races).forEach(name => {
-    const button = document.createElement('button');
-    button.textContent = name;
-    button.addEventListener('click', () => {
-      selectedRace = name;
-      showAddUserTemplate(); // Trigger rendering of add user screen
+    Object.keys(races).forEach(name => {
+      const button = document.createElement('button');
+      button.textContent = name;
+      button.addEventListener('click', () => {
+        selectedRace = name;
+        showAddUserTemplate(); // Trigger rendering of add user screen
+      });
+      raceButtonsContainer.appendChild(button);
     });
-    raceButtonsContainer.appendChild(button);
-  });
+  }
 
   createRaceBtn.addEventListener('click', () => {
+    const races = getRaces();
     const name = raceNameInput.value.trim();
     if (name && !races[name]) {
       races[name] = [];
+      saveRaces(races);
       selectedRace = name;
       showAddUserTemplate(); // Trigger rendering of add user screen
     } else {
-      alert('Enter a unique race name.');
+      console.log('Enter a unique race name.');
     }
   });
+
+  removeRaceBtn.addEventListener('click', () => {
+    const name = raceNameInput.value.trim();
+    deleteRace(name);
+    renderRaceButtons();
+  });
+
+  renderRaceButtons();
 }
 
 function initializeLeaderboardPage() {

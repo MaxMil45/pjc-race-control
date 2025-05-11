@@ -51,21 +51,46 @@ What went wrong in the beggining was that varibales names were every similar to 
 How should I size buttons in a modern, responsive HTML/CSS web project? Should I use width and height, or is there a better way?
 
 
-🔴 Problem:
-This part of your server-side code is wrong:
+--------------------------------------------------------------------------------------------
+While building the server-side API for logging race laps, I wrote the following input validation condition:
 
 if (!time || !racer || checkpoint || date === undefined) {
   return res.status(400).json({ error: 'Missing time, racer, or checkpoint' });
 }
+Issue:
+This logic was incorrect because checkpoint || date === undefined would always evaluate to true when checkpoint had any value (e.g., 1). This caused valid input to be rejected.
 
-checkpoint || date === undefined will always evaluate to true if checkpoint has any value, even a valid one like 1, because JavaScript treats non-zero numbers as truthy.
+AI Prompt Used:
 
-✅ Fix it like this:
+"This part of my server-side code is wrong: if (!time || !racer || checkpoint || date === undefined) – why is this a problem, and how can I fix it?"
+
+AI Suggestion:
+The AI explained the truthy/falsy behavior and suggested the corrected condition:
 
 if (!time || !racer || checkpoint === undefined || date === undefined) {
   return res.status(400).json({ error: 'Missing time, racer, checkpoint, or date' });
 }
-Now it correctly checks that all four values are present.
+Outcome:
+This feedback clarified the problem, and I rewrote the logic in my own way with a clear understanding. The fix now appears in the route handler in server.js.
+
+What Worked Well
+Quick clarification of subtle JavaScript logic.
+
+Helped me better understand how to write clean, accurate conditionals.
+
+Accelerated debugging without sacrificing understanding or control.
+
+What Didn’t Work
+What I did was rely on it too fast, without looking properly for the obvious mistake. 
+
+What I Learned
+Always validate AI-generated code with your own understanding.
+
+Generative AI is useful for learning and idea generation, but not a replacement for coding knowledge.
+
+Maintainable code comes from refining AI output—not blindly using it.
+
+--------------------------------------------------------------------------------------------
 
 -------------------LeaderBoard-----------------------------
 Every time i am trying to load my leardboard there an error like this when it is updating live
@@ -79,6 +104,47 @@ renderLeaderboard	@	function.js:91
 addResult	@	function.js:211
 (anonymous)	@	function.js:515
 
+
+-----------------AI Objects------------
+Object.keys(addPressCounts).forEach(key => {
+    addPressCounts[key] = 0;
+  });
+
+  Object.keys(checkpointData).forEach(key => {
+    checkpointData[key] = [];
+  });
+
+--------------------------------------------------------------------------------------------
+
+  *“How can I match a runner’s number to their name from an array of objects?”*
+
+    const foundRunner = validRunners.find(runner => runner.number === runnerNumberInput);
+-----------------------------------------------------------------
+Uncaught TypeError: Cannot read properties of undefined (reading 'forEach')
+    at updateUserList (function.js:618:25)
+    at initializeAddUserListeners (function.js:633:3)
+    at showAddUserTemplate (function.js:80:3)
+    at HTMLButtonElement.<anonymous> (function.js:684:7)
+updateUserList	@	function.js:618
+initializeAddUserListeners	@	function.js:633
+showAddUserTemplate	@	function.js:80
+(anonymous)	@	function.js:684
+
+I used ChatGPT as a second opinion to confirm and resolve a bug where .forEach was called on undefined. I had identified the error location but wanted guidance on best practices for handling missing data in localStorage.
+
+Prompts used included:
+
+“Uncaught TypeError: Cannot read properties of undefined (reading 'forEach')”
+
+“Can you make this into local storage?”
+
+“What should this look like?”
+
+ChatGPT helped improve resilience by suggesting default fallbacks (e.g., races[selectedRace] || []) and reminding me to persist updates using saveRaces(). These suggestions directly influenced the final race creation and user registration features.
+
+AI support was helpful, but all changes were reviewed and tested manually.
+
+----------------------------------------------------
 
 
 ### Prompts to develop XYZ (example)

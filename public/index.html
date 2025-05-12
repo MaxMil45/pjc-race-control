@@ -53,29 +53,24 @@
   <template id="raceAppTemplate">
     <section class="race-app">
       <nav id="navControls">
-        <button id="backBtn">← Back</button>
-        <button id="forwardBtn">Leaderboard →</button>
+        <button id="backBtn">←  Back</button>
+        <button id="forwardBtn">Results →</button>
       </nav>
 
-      <header>
-        <h1>Welcome to Race</h1>
-      </header>
+      <h2 id="timer">00:00:00:00</h2>
 
       <main>
-        <section>
+        <h1>Race Controls</h1>
+        <section class="participant-input-container">
           <input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required />
-          <button id="generateTables">Add Checkpoints</button>
+          <button id="generateTables">Add</button>
         </section>
 
-        <section>
-          <h2 id="timer">00:00:00:00</h2>
-          <section>
-            <h3>Race Controls</h3>
-            <button id="startRace">Start Race</button>
-          </section>
-        </section>
+        <button id="startRace">Start Race</button>
 
-        <section>
+        <p id="errorMessage" hidden></p>
+
+        <section id="functionButtons">
           <button id="clearResults">Clear Results</button>
           <button id="sendData">Send Data</button>
           <button id="exportResults" hidden>Export to CSV</button>
@@ -85,36 +80,43 @@
 
         <section>
           <h2>The Finish Times:</h2>
+
+          <section class="participant-input-container">
           <input type="text" id="participant" placeholder="Enter Racer Name" />
           <button id="submitRacer">Add</button>
+          </section>
+
           <button id="submitResults">Record Time</button>
           <ul id="finishTimes"></ul>
         </section>
       </main>
 
-      <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
-        <h2 id="confirmTitle">Confirm Action</h2>
-        <p id="confirmText">Are you sure you want to clear all race results?</p>
-        <form method="dialog">
-          <button id="confirmYes">Yes</button>
-          <button id="confirmNo">Cancel</button>
-        </form>
-      </dialog>
-
       <template id="checkpointTemplate">
         <section class="checkpoint" aria-labelledby="checkpoint-heading">
           <h3 id="checkpoint-heading">Checkpoint <span class="checkpoint-number"></span></h3>
 
+          <section class="participant-input-container">
           <input type="text" class="racer-name" placeholder="Enter Racer Name" />
           <button class="checkpoint-update" data-checkpoint="">Add</button>
+          </section>
 
           <button class="checkpoint-button" data-checkpoint="">Record Time</button>
+          
           <h4>Recorded Times:</h4>
           <ul class="times-list" aria-label="Checkpoint times list"></ul>
         </section>
       </template>
     </section>
   </template>
+
+  <dialog id="confirmDialog" aria-labelledby="confirmTitle" aria-describedby="confirmText">
+    <h2 id="confirmTitle">Confirm Action</h2>
+    <p id="confirmText">Are you sure you want to clear all race results?</p>
+    <form method="dialog">
+      <button id="confirmYes">Yes</button>
+      <button id="confirmNo">Cancel</button>
+    </form>
+  </dialog>
 
   <template id="leaderboardTemplate">
     <section id="leaderboard">

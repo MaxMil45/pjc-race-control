@@ -145,8 +145,55 @@ ChatGPT helped improve resilience by suggesting default fallbacks (e.g., races[s
 AI support was helpful, but all changes were reviewed and tested manually.
 
 ----------------------------------------------------
+section.dataset.checkpoint = i;
 
+      clone.querySelector('.checkpoint-number').textContent = i;
+      clone.querySelector('.checkpoint-button').dataset.checkpoint = i;
+      clone.querySelector('.checkpoint-update').dataset.checkpoint = i;
 
+      clone.querySelector('.times-list').id = `timesList-${i}`;
+
+      container.appendChild(clone);
+      checkpointData[i] = [];
+
+      renderCheckpointRacers(i);
+
+      here
+------------------------------------------------
+how do you underline stuff
+
+--------------------------------------------------
+
+Used ai to find how to use Object.keys(races).forEach =>, instead of for loop
+
+Object.keys(races).forEach(name => {
+      const button = document.createElement('button');
+      button.textContent = name;
+      button.addEventListener('click', () => {
+        selectedRace = name;
+        showAddUserTemplate(); // Trigger rendering of add user screen
+      });
+      raceButtonsContainer.appendChild(button);
+    });
+
+-------------------------------------------------------
+
+can you do the same for this so no matter if someone typed the name incorrectly to the capitals i would still remove
+
+removeRaceBtn.addEventListener('click', () => {
+    const name = raceNameInput.value.trim();
+    deleteRace(name);
+    renderRaceButtons();
+  });
+
+------------------------------------------------------------------------------
+
+ <!-- const clearType = false;
+    const openConfirmDialog = createConfirmDialog();
+    if (isPaused && hasStarted) {
+      openConfirmDialog((clearType) => { -->
+  
+----------------------------------------------------------
 ### Prompts to develop XYZ (example)
 A sequence of prompts helped me develop this feature:
 

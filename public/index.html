@@ -33,6 +33,12 @@
       <h3>Choose an existing race</h3>
       <section id="raceButtons"></section>
     </section>
+
+    <aside id="cookieConsent" role="alert" aria-live="polite">
+      <p>This website uses cookies to improve your experience.</p>
+      <button id="acceptCookiesBtn">Accept All</button>
+      <button id="acceptNecessaryBtn">Only Necessary</button>
+    </aside>
   </template>
 
   <!-- ADD USERS -->
@@ -60,7 +66,7 @@
       <h2 id="timer">00:00:00:00</h2>
 
       <main>
-        <h1>Race Controls</h1>
+        <h1>Race Control</h1>
         <section class="participant-input-container">
           <input type="number" id="checkpointLocation" placeholder="How many checkpoints?" required />
           <button id="generateTables">Add</button>

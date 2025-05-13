@@ -41,7 +41,8 @@ button:hover {
 }
 
 h1 {
-  font-size: 2em;
+  font-size: 2.5em;
+  text-align: center; 
 }
 
 h2 {
@@ -281,3 +282,41 @@ dialog::backdrop {
   text-align: center;
 }
 
+#cookieConsent {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #222;
+  color: white;
+  padding: 1rem;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  font-family: sans-serif;
+  z-index: 1000;
+  flex-wrap: wrap;
+}
+
+#cookieConsent p {
+  margin: 0;
+  flex: 1;
+}
+
+#cookieConsent div {
+  display: flex;
+  gap: 0.5rem;
+}
+
+#cookieConsent button {
+  padding: 0.5rem 1rem;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#cookieConsent button:hover {
+  background-color: #0056b3;
+}

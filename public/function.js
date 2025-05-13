@@ -25,6 +25,13 @@ let currentPageIndex = 1;
 
 document.addEventListener('DOMContentLoaded', () => {
   showCreateRaceTemplate(); // Load on startup
+
+  if (!localStorage.getItem('cookieConsent')) {
+    document.getElementById('cookieConsent').style.display = 'flex';
+  }
+
+  document.querySelector('#acceptCookiesBtn').addEventListener('click', acceptCookies);
+  document.querySelector('#acceptNecessaryBtn').addEventListener('click', acceptNecessary);
 });
 
 function loadPageByIndex(index) {
@@ -133,6 +140,17 @@ function saveRaces(races) {
   localStorage.setItem('races', JSON.stringify(races));
 }
 
+// Cookie Consent Functions
+function acceptCookies() {
+  localStorage.setItem('cookieConsent', 'all');
+  document.getElementById('cookieConsent').style.display = 'none';
+}
+
+function acceptNecessary() {
+  localStorage.setItem('cookieConsent', 'necessary');
+  document.getElementById('cookieConsent').style.display = 'none';
+}
+
 // =======================
 // Timer Functions
 // =======================
@@ -183,74 +201,6 @@ function currentTime() {
   const now = new Date();
   now.setHours(now.getHours() + 1); // add 1 hour
   return now.toISOString().slice(0, 19).replace('T', ' ');
-}
-
-// =======================
-// Render Learder Board Functions
-// =======================
-function renderLeaderboard(tbody) {
-  const results = getLocalResults();
-  tbody.innerHTML = ''; // Clear old content
-
-  if (results.length === 0) {
-    const row = document.createElement('tr');
-    row.innerHTML = '<td colspan="4">No results to display.</td>';
-    tbody.appendChild(row);
-    return;
-  }
-
-  // Group results by runner name
-  const runnerGroups = {};
-  results.forEach(res => {
-    if (!runnerGroups[res.runnerName]) {
-      runnerGroups[res.runnerName] = [];
-    }
-    runnerGroups[res.runnerName].push(res);
-  });
-
-  // Convert grouped runners to array and sort by highest checkpoint
-  const groupedArray = Object.entries(runnerGroups).sort(([, a], [, b]) => {
-    const maxA = Math.max(...a.map(r => r.checkpoint));
-    const maxB = Math.max(...b.map(r => r.checkpoint));
-    return maxB - maxA;
-  });
-
-  let rank = 1;
-  groupedArray.forEach(([runnerName, entries]) => {
-    // Create main row with summary info
-    const mainRow = document.createElement('tr');
-    const detailsCell = document.createElement('td');
-    detailsCell.colSpan = 4;
-
-    const details = document.createElement('details');
-    const summary = document.createElement('summary');
-    summary.innerHTML = `
-      <strong>Rank ${rank}</strong> – <strong>${runnerName}</strong>
-    `;
-    details.appendChild(summary);
-
-    // Create a list of this runner's checkpoint times
-    const list = document.createElement('ul');
-    entries.sort((a, b) => a.checkpoint - b.checkpoint);
-    entries.forEach(e => {
-      if (e.checkpoint === numFinish) {
-        const finishTime = document.createElement('strong');
-        finishTime.textContent = `Finish Time: ${e.time}`;
-        list.appendChild(finishTime);
-      } else {
-        const item = document.createElement('li');
-        item.textContent = `Checkpoint ${e.checkpoint}: ${e.time}`;
-        list.appendChild(item);
-      }
-    });
-
-    details.appendChild(list);
-    detailsCell.appendChild(details);
-    mainRow.appendChild(detailsCell);
-    tbody.appendChild(mainRow);
-
-    rank++;
-  });
 }
 
 
@@ -799,6 +749,10 @@ function initializeCreateEventListeners() {
   }
 }
 
+// =======================
+// Leaderboard Page Initialization
+// =======================
+
 function initializeLeaderboardPage() {
   const tbody = document.querySelector('#leaderboardBody');
   if (tbody) {
@@ -807,4 +761,76 @@ function initializeLeaderboardPage() {
   } else {
     console.error('Leaderboard table body not found.');
   }
+}
+
+// =======================
+// Render Learder Board Functions
+// =======================
+function renderLeaderboard(tbody) {
+  const results = getLocalResults();
+  tbody.innerHTML = ''; // Clear old content
+
+  if (results.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = '<td colspan="4">No results to display.</td>';
+    tbody.appendChild(row);
+    return;
+  }
+
+  // Group results by runner name
+  const runnerGroups = {};
+  results.forEach(res => {
+    if (res.runnerName.includes('Racer')) {
+      return;
+    }
+
+    if (!runnerGroups[res.runnerName]) {
+      runnerGroups[res.runnerName] = [];
+    }
+    runnerGroups[res.runnerName].push(res);
+  });
+
+  // Convert grouped runners to array and sort by highest checkpoint
+  const groupedArray = Object.entries(runnerGroups).sort(([, a], [, b]) => {
+    const maxA = Math.max(...a.map(r => r.checkpoint));
+    const maxB = Math.max(...b.map(r => r.checkpoint));
+    return maxB - maxA;
+  });
+
+  let rank = 1;
+  groupedArray.forEach(([runnerName, entries]) => {
+    // Create main row with summary info
+    const mainRow = document.createElement('tr');
+    const detailsCell = document.createElement('td');
+    detailsCell.colSpan = 4;
+
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.innerHTML = `
+      <strong>Rank ${rank}</strong> – <strong>${runnerName}</strong>
+    `;
+    details.appendChild(summary);
+
+    // Create a list of this runner's checkpoint times
+    const list = document.createElement('ul');
+    entries.sort((a, b) => a.checkpoint - b.checkpoint);
+    entries.forEach(e => {
+      if (e.checkpoint === numFinish) {
+        const finishTime = document.createElement('strong');
+        finishTime.textContent = `Finish Time: ${e.time}`;
+        list.appendChild(finishTime);
+      } else {
+        const item = document.createElement('li');
+        item.textContent = `Checkpoint ${e.checkpoint}: ${e.time}`;
+        list.appendChild(item);
+      }
+    });
+
+    details.appendChild(list);
+    detailsCell.appendChild(details);
+    mainRow.appendChild(detailsCell);
+    tbody.appendChild(mainRow);
+
+    rank++;
+  });
 }

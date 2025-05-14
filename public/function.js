@@ -163,6 +163,7 @@ function startTimer() {
 
   isPaused = false;
 
+  // Clear any existing timer interval
   timerInterval = setInterval(() => {
     const currentTime = Date.now();
     const timeDiff = currentTime - startTime;
@@ -184,6 +185,7 @@ function startTimer() {
   }, 10);
 }
 
+// Function to pause the timer
 function pauseTimer() {
   if (!isPaused) {
     clearInterval(timerInterval);
@@ -191,12 +193,14 @@ function pauseTimer() {
   }
 }
 
+// Function to stop the timer
 function stopTimer() {
   clearInterval(timerInterval);
   isPaused = false;
   pausedTime = 0;
 }
 
+// Function to get the current time in the desired format
 function currentTime() {
   const now = new Date();
   now.setHours(now.getHours() + 1); // add 1 hour
@@ -227,6 +231,7 @@ function addResult(time, checkpoint) {
   setLocalResults(results);
 }
 
+// Function to submit results to the server
 async function submitToServer() {
   const results = getLocalResults();
 
@@ -235,6 +240,7 @@ async function submitToServer() {
     return;
   }
 
+  // Send each result to the server
   for (const result of results) {
     const response = await fetch('http://localhost:8080/api/saveRaceResult', {
       method: 'POST',
@@ -261,10 +267,12 @@ async function submitToServer() {
 function updateRacer(id, runnerName, checkpoint) {
   const results = getLocalResults();
 
+  // Find the result with the matching ID and checkpoint
   const updated = results.map((res) =>
     res.id === id && res.checkpoint === checkpoint ? { ...res, runnerName } : res,
   );
 
+  // Save the updated list back to local storage
   setLocalResults(updated);
   renderRacerResults(numFinish, '#finishTimes');
 }
@@ -285,6 +293,7 @@ function renderRacerResults(checkpoint, containerSelector = null) {
 
   container.innerHTML = '';
 
+  // Sort results by time
   const ul = document.createElement('ul');
   results
     .filter(result => result.checkpoint === checkpoint)
@@ -309,9 +318,12 @@ function createConfirmDialog(clearTypeRace) {
 
   let onConfirm = null;
 
+  // Define the text based on the type of confirmation
   if (clearTypeRace) {
+    // If the user is going back to the first page
     confirmText.textContent = 'To go back to the first page, all data will be cleared. Do you want to continue?';
   } else {
+    // Race control page
     confirmText.textContent = 'Are you sure you want to clear all race results?';
   }
 
@@ -335,25 +347,32 @@ function createConfirmDialog(clearTypeRace) {
 function clearLocalData() {
   localStorage.removeItem('raceResults');
 
+  // Clear the finish time count
   Object.keys(addPressCounts).forEach(key => {
     addPressCounts[key] = 0;
   });
 
+  // Clears the checkpoint data
   Object.keys(checkpointData).forEach(key => {
     checkpointData[key] = [];
   });
 
+  // Clear the times list
   document.querySelectorAll('.times-list').forEach(list => {
     list.innerHTML = '';
   });
 
+  // Clear the finish queue
   finishQueue.length = 0;
-
-  localStorage.removeItem('numCheckpoint');
-
   count = 0;
 
+  // Clears the saved checkpoint number
+  localStorage.removeItem('numCheckpoint');
+
+  // Clear the timer display
   renderRacerResults(numFinish, '#finishTimes');
+
+  // Reset the timer
   stopTimer();
 }
 
@@ -372,8 +391,163 @@ async function clearData() {
   console.log(data.message);
 }
 
+
 // =======================
-// Dynamic Event Listener Initialization
+// Create Races page functions
+// =======================
+
+function initializeCreateEventListeners() {
+  const raceButtonsContainer = document.querySelector('#raceButtons');
+  const createRaceBtn = document.querySelector('#createRaceBtn');
+  const raceNameInput = document.querySelector('#raceName');
+  const removeRaceBtn = document.querySelector('#removeRaceBtn');
+
+  function renderRaceButtons() {
+    raceButtonsContainer.innerHTML = '';
+    const races = getRaces();
+
+    // Gets all the races from localStorage
+    Object.keys(races).forEach(name => {
+      const button = document.createElement('button');
+      button.textContent = name;
+      button.addEventListener('click', () => {
+        selectedRace = name;
+        showAddUserTemplate(); // Trigger rendering of add user screen
+      });
+      raceButtonsContainer.appendChild(button);
+    });
+  }
+
+  // Create button calls create function then updates page
+  createRaceBtn.addEventListener('click', () => {
+    const races = getRaces();
+    const name = raceNameInput.value.trim();
+
+    const existingNames = Object.keys(races).map(r => r.toLowerCase());
+
+    if (name && !existingNames.includes(name.toLowerCase())) {
+      races[name] = [];
+
+      // Save the new race to localStorage
+      saveRaces(races);
+      selectedRace = name;
+
+      // Trigger rendering of add user screen
+      showAddUserTemplate();
+    } else {
+      console.log('Enter a unique race name.');
+    }
+  });
+
+  // Remove button calls delete function then updates page
+  removeRaceBtn.addEventListener('click', () => {
+    const name = raceNameInput.value.trim();
+    deleteRace(name);
+    renderRaceButtons();
+    raceNameInput.value = '';
+  });
+
+  renderRaceButtons();
+
+  // Function to delete the race
+  function deleteRace(raceName) {
+    // Get current races from localStorage
+    const races = getRaces();
+
+    if (races[raceName]) {
+      // Remove the race by name
+      delete races[raceName];
+      // Save the updated list back to localStorage
+      saveRaces(races);
+      console.log(`${raceName} has been deleted.`);
+    } else {
+      console.log('Race not found.');
+    }
+  }
+}
+
+// =======================
+// Add User Page Functions
+// =======================
+
+function initializeAddUserListeners() {
+  const raceNameDisplay = document.querySelector('#raceNameDisplayAdd');
+  const newUserNameInput = document.querySelector('#newUserName');
+  const addUserBtn = document.querySelector('#addUser');
+  const userList = document.querySelector('#userList');
+
+  raceNameDisplay.textContent = selectedRace;
+
+  // Function to update the user list based on the selected
+  function updateUserList() {
+    const races = getRaces();
+    userList.innerHTML = '';
+
+    const users = races[selectedRace] || [];
+    users.forEach(user => {
+      const li = document.createElement('li');
+      li.textContent = `${user.name} (#${user.number})`;
+      userList.appendChild(li);
+    });
+  }
+
+  // Function to generate a ordered unique number for the user
+  function generateUniqueNumber(existingNumbers) {
+    for (let i = 1; i <= 999; i++) {
+      const num = i.toString().padStart(3, '0');
+      if (!existingNumbers.includes(num)) return num;
+    }
+    return null; // all numbers used
+  }
+
+  updateUserList();
+
+  // Add user button calls add function then updates page
+  addUserBtn.addEventListener('click', () => {
+    const races = getRaces();
+    const name = newUserNameInput.value.trim();
+    if (!name) return;
+
+    if (!races[selectedRace]) {
+      races[selectedRace] = [];
+    }
+
+    const existingUsers = races[selectedRace];
+
+    // Normalize input to lowercase for comparison
+    const nameLower = name.toLowerCase();
+
+    // Check for duplicate usernames (case-insensitive)
+    const duplicate = existingUsers.some(user => user.name.toLowerCase() === nameLower);
+
+    if (duplicate) {
+      console.log('Username already exists.');
+      return;
+    }
+
+    const existingNumbers = existingUsers.map(u => u.number);
+    const newNumber = generateUniqueNumber(existingNumbers);
+
+    if (!newNumber) {
+      console.log('Maximum participants reached for this race (999).');
+      return;
+    }
+
+    // Add the user
+    existingUsers.push({ name, number: newNumber });
+
+    // Save to localStorage
+    saveRaces(races);
+
+    newUserNameInput.value = '';
+
+    // Update the user list
+    updateUserList();
+  });
+}
+
+// =======================
+// Race Control Listener Initialization
 // =======================
 
 function initializeRaceEventListeners() {
@@ -593,160 +767,6 @@ function initializeRaceEventListeners() {
       renderRacerResults(checkpoint);
     }
   });
-}
-
-// =======================
-// Add User Page Functions
-// =======================
-
-function initializeAddUserListeners() {
-  const raceNameDisplay = document.querySelector('#raceNameDisplayAdd');
-  const newUserNameInput = document.querySelector('#newUserName');
-  const addUserBtn = document.querySelector('#addUser');
-  const userList = document.querySelector('#userList');
-
-  raceNameDisplay.textContent = selectedRace;
-
-  // Function to update the user list based on the selected
-  function updateUserList() {
-    const races = getRaces();
-    userList.innerHTML = '';
-
-    const users = races[selectedRace] || [];
-    users.forEach(user => {
-      const li = document.createElement('li');
-      li.textContent = `${user.name} (#${user.number})`;
-      userList.appendChild(li);
-    });
-  }
-
-  // Function to generate a ordered unique number for the user
-  function generateUniqueNumber(existingNumbers) {
-    for (let i = 1; i <= 999; i++) {
-      const num = i.toString().padStart(3, '0');
-      if (!existingNumbers.includes(num)) return num;
-    }
-    return null; // all numbers used
-  }
-
-  updateUserList();
-
-  // Add user button calls add function then updates page
-  addUserBtn.addEventListener('click', () => {
-    const races = getRaces();
-    const name = newUserNameInput.value.trim();
-    if (!name) return;
-
-    if (!races[selectedRace]) {
-      races[selectedRace] = [];
-    }
-
-    const existingUsers = races[selectedRace];
-
-    // Normalize input to lowercase for comparison
-    const nameLower = name.toLowerCase();
-
-    // Check for duplicate usernames (case-insensitive)
-    const duplicate = existingUsers.some(user => user.name.toLowerCase() === nameLower);
-
-    if (duplicate) {
-      console.log('Username already exists.');
-      return;
-    }
-
-    const existingNumbers = existingUsers.map(u => u.number);
-    const newNumber = generateUniqueNumber(existingNumbers);
-
-    if (!newNumber) {
-      console.log('Maximum participants reached for this race (999).');
-      return;
-    }
-
-    // Add the user
-    existingUsers.push({ name, number: newNumber });
-
-    // Save to localStorage
-    saveRaces(races);
-
-    newUserNameInput.value = '';
-
-    // Update the user list
-    updateUserList();
-  });
-}
-
-// =======================
-// Create Races page functions
-// =======================
-
-function initializeCreateEventListeners() {
-  const raceButtonsContainer = document.querySelector('#raceButtons');
-  const createRaceBtn = document.querySelector('#createRaceBtn');
-  const raceNameInput = document.querySelector('#raceName');
-  const removeRaceBtn = document.querySelector('#removeRaceBtn');
-
-  function renderRaceButtons() {
-    raceButtonsContainer.innerHTML = '';
-    const races = getRaces();
-
-    // Gets all the races from localStorage
-    Object.keys(races).forEach(name => {
-      const button = document.createElement('button');
-      button.textContent = name;
-      button.addEventListener('click', () => {
-        selectedRace = name;
-        showAddUserTemplate(); // Trigger rendering of add user screen
-      });
-      raceButtonsContainer.appendChild(button);
-    });
-  }
-
-  // Create button calls create function then updates page
-  createRaceBtn.addEventListener('click', () => {
-    const races = getRaces();
-    const name = raceNameInput.value.trim();
-
-    const existingNames = Object.keys(races).map(r => r.toLowerCase());
-
-    if (name && !existingNames.includes(name.toLowerCase())) {
-      races[name] = [];
-
-      // Save the new race to localStorage
-      saveRaces(races);
-      selectedRace = name;
-
-      // Trigger rendering of add user screen
-      showAddUserTemplate();
-    } else {
-      console.log('Enter a unique race name.');
-    }
-  });
-
-  // Remove button calls delete function then updates page
-  removeRaceBtn.addEventListener('click', () => {
-    const name = raceNameInput.value.trim();
-    deleteRace(name);
-    renderRaceButtons();
-    raceNameInput.value = '';
-  });
-
-  renderRaceButtons();
-
-  // Function to delete the race
-  function deleteRace(raceName) {
-    // Get current races from localStorage
-    const races = getRaces();
-
-    if (races[raceName]) {
-      // Remove the race by name
-      delete races[raceName];
-      // Save the updated list back to localStorage
-      saveRaces(races);
-      console.log(`${raceName} has been deleted.`);
-    } else {
-      console.log('Race not found.');
-    }
-  }
 }
 
 // =======================

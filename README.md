@@ -194,6 +194,11 @@ Replace this with DETAIL about your use of AI, listing of the prompts you used, 
 --------------------------------------------------------------------------------------------
 ### LeaderBoard
 
+Input:
+“Why am I getting ‘Uncaught TypeError: Cannot set properties of undefined (setting 'innerHTML')’ when updating the leaderboard?”
+
+Output:
+“The DOM element you're trying to update doesn't exist yet—likely because it’s in a different HTML template or hasn’t loaded. Make sure the leaderboard exists in the DOM before trying to update it.”
 
 I used AI to revise my leaderboard JavaScript that was giving me errors when I tried to update it. Specifically, I encountered an "Uncaught TypeError: Cannot set properties of undefined (setting 'innerHTML')" error and I asked the AI why it is producing this error. The AI told me there was a problem in the DOM element not yet created which helped me remember that the leadboard was in a different template so it can update if it is not loaded. This helped me change my plan for the leaderboard and how I would load it. The whole process was smooth—I received a clear explanation, prompt feedback, and an applicable solution. I learnt of the power of AI in swiftly finding live code front-end problems.
 
@@ -201,12 +206,10 @@ I used AI to revise my leaderboard JavaScript that was giving me errors when I t
 -------------------------------------------------------------------------
 ### .find()
 
+  Input: *“How can I match a runner’s number to their name from an array of objects?”*
 
-  *“How can I match a runner’s number to their name from an array of objects?”*
 
-
-    const foundRunner = validRunners.find(runner => runner.number === runnerNumberInput);
-
+  Output: const foundRunner = validRunners.find(runner => runner.number === runnerNumberInput);
 
 I used AI to find a link between the names on a marathon final tally and the numbers chosen from a list of participants. I asked "How can I match a runner’s number to their name from an array of objects?" and the AI suggested applying .find() with a callback function. So I received a code line: const foundRunner = validRunners.find(runner => runner.number === runnerNumberInput); that was very helpful and I applied it in the project to find and expose the name of the corresponding runner according to the number. It allowed me to not only implement it in a short amount of time but also understand the mechanics of .find() in relation to object arrays.
 
@@ -214,6 +217,11 @@ I used AI to find a link between the names on a marathon final tally and the num
 -----------------------------------------------------------------
 ### .dataset
 
+  Input:
+  “How can I track individual checkpoints in my HTML dynamically using JavaScript?”
+
+  Output:
+  “Use custom data attributes like element.dataset.checkpoint = i; to store checkpoint indexes or IDs.”
 
 I used AI to understand how to use the .dataset property in html elements with custom data. AI helped me set ".dataset.checkpoint = i;" on each checkpoint section and its child elements, so I could easily track which checkpoint each element referred to. This made it much easier to manage updates and render race data dynamically. It was, therefore, easier for me to handle the interactions, and the update times were less.
 
@@ -221,6 +229,11 @@ I used AI to understand how to use the .dataset property in html elements with c
 ------------------------------------------------
 ### Underline
 
+  Input:
+  “How do I underline text using CSS?”
+
+  Output:
+  text-decoration: underline;
 
 I asked AI how to underline text in CSS. It told me quickly to use text-decoration: underline;. I used this in my project underline the heading of the race name in the add user page. It was a quick solution that improved readability, and it helped me better understand small css properties.
 
@@ -228,6 +241,11 @@ I asked AI how to underline text in CSS. It told me quickly to use text-decorati
 --------------------------------------------------
 ### For loop
 
+  Input:
+  “How can I simplify a for loop when looping through keys of an object?”
+
+  Output:
+  Object.keys(races).forEach(name => { ... })
 
 I used AI to learn how to replace a normal for loop with Object.keys().forEach, this was much easier and more readable code. Instead of using for (let i = 0; i < cars.length; i + +), I used Object.keys(races).forEach(name => { ... }) which helped create the buttons for each race saved. This added more consistency in my code where I had instead learnt why and how I should use certain loops and their purposes
 
@@ -235,6 +253,11 @@ I used AI to learn how to replace a normal for loop with Object.keys().forEach, 
 -------------------------------------------------------
 ### Cookie Consent
 
+  Input:
+  “How do I show a cookie consent banner only if the user hasn’t agreed yet, and avoid errors with event listeners?”
+
+  Output:
+  “Use localStorage to store consent and check it on DOMContentLoaded to ensure the DOM is ready before attaching listeners.”
 
 I used AI to help implement a basic cookie consent system. I was saving data to localStorage. I needed to show a banner for the user to choose their option. AI gave me the idea to check if the consent was agreed in localStorage. It  explained how to use DOMContentLoaded so the JavaScript wouldn’t run before the HTML loaded, which fixed issues with event listeners not working. The final result worked well, and I learned how to manage timing in the DOM and store consent properly across sessions.
 
@@ -247,6 +270,8 @@ I used AI to help simplify problems with back and forth with the pages. Initiall
 
 
 To go from this
+
+Input:
 if (pageOrder[index] === '#tmp-screen-create') {
   initializeCreateEventListeners();
 } else if (pageOrder[index] === '#tmp-screen-add') {
@@ -258,7 +283,7 @@ if (pageOrder[index] === '#tmp-screen-create') {
 }
 
 
-To this
+Output:
 switch (pageOrder[index]) {
   case '#tmp-screen-create':
     initializeCreateEventListeners();

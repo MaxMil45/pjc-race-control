@@ -83,6 +83,7 @@ h4 {
   font-size: 1.1em;
   width: 100%;
 }
+
 #removeRaceBtn {
   margin-bottom: 2.5em;
 }
@@ -236,7 +237,7 @@ dialog::backdrop {
   background-color: #1976d2;
   color: white;
   cursor: pointer;
-  margin: 0; /* Prevents any spacing shift */
+  margin: 0;
 }
 
 #submitResults, .checkpoint-button {
@@ -249,17 +250,17 @@ dialog::backdrop {
 }
 
 .checkpoint {
-  border: 2px solid #00ccff; /* dark grey border */
-  border-radius: 8px;     /* rounded corners (optional) */
-  padding: 36px;          /* space inside the border */
-  margin-bottom: 16px;    /* space between checkpoints */
-  background-color: #f9f9f9; /* light background (optional) */
+  border: 2px solid #00ccff;
+  border-radius: 8px;
+  padding: 36px;
+  margin-bottom: 16px;
+  background-color: #f9f9f9;
 }
 
 #functionButtons {
   display: flex;
-  justify-content: space-between; /* Ensures the buttons are evenly spaced */
-  gap: 1em; /* Optional: adds space between buttons */
+  justify-content: space-between;
+  gap: 1em; 
 }
 
 #clearResults, #sendData, #exportResults {
@@ -319,4 +320,45 @@ dialog::backdrop {
 
 #cookieConsent button:hover {
   background-color: #0056b3;
+}
+
+@media (min-width: 768px) {
+  #createRaceBtn, #removeRaceBtn {
+  padding: 1.3em 1.6em;
+  }
+
+  #addUser {
+  padding: 1.5em 1.9em; 
+  }
+
+  #backBtn, #forwardBtn {
+  height: 4em;
+  margin-bottom: 0.5em;
+  }
+
+  #timer {
+  font-size: 5em;
+  text-align: center;
+  margin-bottom: 1em;
+  }
+
+  #checkpointLocation, #generateTables{
+  margin-bottom: 3em;
+  }
+
+  h1 {
+  font-size: 3em;
+  }
+
+  h2 {
+  font-size: 2.5em;
+  }
+
+  h3 {
+  font-size: 2em;
+  }
+
+  h4 {
+  font-size: 2em;
+  }
 }
